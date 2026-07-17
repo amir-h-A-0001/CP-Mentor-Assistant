@@ -1,0 +1,104 @@
+import json
+import gspread
+import gs_api
+
+
+
+# Text colors
+RESET = "\033[0m"
+RED     = "\033[31m"
+GREEN   = "\033[32m"
+YELLOW  = "\033[33m"
+BLUE    = "\033[34m"
+MAGENTA = "\033[35m"
+CYAN    = "\033[36m"
+WHITE   = "\033[37m"
+BRIGHT = "\033[1m"
+DIM    = "\033[2m"
+
+
+
+
+def clear_all(sheet):
+    try:
+        sheet.worksheet("Note")
+    except gspread.exceptions.WorksheetNotFound:
+        sheet.add_worksheet(
+            title="Note",
+            rows=100,
+            cols=20
+        )
+
+    for worksheet in sheet.worksheets():
+        if worksheet.title != "Note":
+            sheet.del_worksheet(worksheet)
+
+
+def create_participants_ws(sheet):
+    ws = sheet.add_worksheet("Participants", 1000, 5)
+    ws_id = ws.id
+
+    print('[Participants] preparing style queries...\t')
+    requests = []
+
+    requests.append(gs_api.update_row_height_request(
+        sheet_id=ws_id,
+        start_row=1,
+        end_row=1,
+        height=42
+    ))
+
+    requests.append(
+        gs_api.update_column_width_request(
+            sheet_id=ws_id,
+            start_col=1,
+            end_col=1,
+            width=214
+        )
+    )
+
+    requests.append(
+        gs_api.update_column_width_request(
+            sheet_id=ws_id,
+            start_col=2,
+            end_col=3,
+            width=130
+        )
+    )
+
+    requests.append(
+        gs_api.update_font_request(
+            sheet_id=ws_id,
+            start_row=1,
+            end_row=1,
+            start_col=1,
+            end_col=3,
+            fontFamily="Lexend",
+            fontSize=12
+        )
+    )
+
+    requests.append(
+        gs_api.center_sheet_request(sheet_id=ws_id)
+    )
+
+    requests.append(
+        gs_api.update_range_color_request(
+            sheet_id=ws_id,
+            start_row=1,
+            end_row=1,
+            start_col=1,
+            end_col=3,
+            color=(224,224,224)
+        )
+    )
+    print(GREEN + 'Done\n' + RESET)
+
+    print('[Participants] sending style queries...\t')
+    gs_api.send_batch_request(ws, requests)
+    print()
+    ws.update(
+        range_name="A1:C1",
+        values=[["FullName", "CF ID", "AtCoder ID"]]
+    )
+
