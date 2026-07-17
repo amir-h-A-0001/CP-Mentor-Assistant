@@ -89,7 +89,7 @@ def create_participants_ws(sheet):
             end_row=1,
             start_col=1,
             end_col=3,
-            color=(224,224,224)
+            color=(224.95,224.95,224.95)
         )
     )
     print(GREEN + 'Done\n' + RESET)
@@ -102,3 +102,106 @@ def create_participants_ws(sheet):
         values=[["FullName", "CF ID", "AtCoder ID"]]
     )
 
+
+
+def create_contests_ws(sheet):
+    ws = sheet.add_worksheet("Contests", 200, 5)
+    ws_id = ws.id
+
+    print('[Contests] preparing style queries...\t')
+    requests = []
+
+    requests.append(gs_api.update_row_height_request(
+        sheet_id=ws_id,
+        start_row=1,
+        end_row=1,
+        height=42
+    ))
+
+    requests.append(
+        gs_api.update_column_width_request(
+            sheet_id=ws_id,
+            start_col=1,
+            end_col=1,
+            width=144
+        )
+    )
+
+    requests.append(
+        gs_api.update_column_width_request(
+            sheet_id=ws_id,
+            start_col=2,
+            end_col=2,
+            width=340
+        )
+    )
+
+    requests.append(
+        gs_api.update_column_width_request(
+            sheet_id=ws_id,
+            start_col=3,
+            end_col=3,
+            width=70
+        )
+    )
+
+    requests.append(
+        gs_api.update_column_width_request(
+            sheet_id=ws_id,
+            start_col=4,
+            end_col=4,
+            width=130
+        )
+    )
+
+    requests.append(
+        gs_api.update_column_width_request(
+            sheet_id=ws_id,
+            start_col=5,
+            end_col=5,
+            width=65
+        )
+    )
+
+    requests.append(
+        gs_api.update_font_request(
+            sheet_id=ws_id,
+            start_row=1,
+            end_row=1,
+            start_col=1,
+            end_col=5,
+            fontFamily="Lexend",
+            fontSize=12
+        )
+    )
+
+    requests.append(
+        gs_api.center_sheet_request(sheet_id=ws_id)
+    )
+
+    requests.append(
+        gs_api.format_date_column_request(
+            sheet_id=ws_id,
+            column=1
+        )
+    )
+
+    requests.append(
+        gs_api.update_range_color_request(
+            sheet_id=ws_id,
+            start_row=1,
+            end_row=1,
+            start_col=1,
+            end_col=5,
+            color=(224.95,224.95,224.95)
+        )
+    )
+    print(GREEN + 'Done\n' + RESET)
+
+    print('[Contests] sending style queries...\t')
+    gs_api.send_batch_request(ws, requests)
+    print()
+    ws.update(
+        range_name="A1:E1",
+        values=[["Date", "Contest Name", "Weight", "Short Name", "URL"]]
+    )

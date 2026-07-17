@@ -148,6 +148,30 @@ def center_sheet_request(*, sheet_id):
         }
     }
 
+
+def format_date_column_request(*, sheet_id, column, pattern="yyyy-mm-dd"):
+    return {
+        "repeatCell": {
+            "range": {
+                "sheetId": sheet_id,
+                "startColumnIndex": column - 1,
+                "endColumnIndex": column
+            },
+            "cell": {
+                "userEnteredFormat": {
+                    "numberFormat": {
+                        "type": "DATE",
+                        "pattern": pattern
+                    }
+                }
+            },
+            "fields": "userEnteredFormat.numberFormat"
+        }
+    }
+
+
+
+
 def send_batch_request(worksheet, requests):
     RESET = "\033[0m"
     RED     = "\033[31m"
