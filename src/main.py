@@ -28,5 +28,3 @@ if __name__ == '__main__':
 
     # Select a worksheet/tab
     worksheet = sheet.worksheet("Test")
-
-    S.create_contests_ws(sheet)
