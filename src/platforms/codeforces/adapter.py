@@ -27,7 +27,7 @@ def extract_official(participants,contestID):
 
             p_res = ParticipantResult(
                 username=username,
-                virtual=False,
+                performance=None,
                 rank=row["rank"],
                 solved=solved,
                 penalty=row["penalty"],

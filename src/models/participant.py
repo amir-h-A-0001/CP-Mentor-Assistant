@@ -5,7 +5,7 @@ from .problem import ProblemResult
 @dataclass
 class ParticipantResult:
     username: str
-    virtual: bool
+    performance: int
     rank: int
     solved: int
     penalty: int
@@ -14,3 +14,7 @@ class ParticipantResult:
     @property
     def problems_count(self):
         return len(self.problems)
+
+    @property
+    def virtual(self):
+        return not self.virtual is None
