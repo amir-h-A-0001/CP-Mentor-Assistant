@@ -1,6 +1,6 @@
 import json
 import gspread
-import styler as S
+import src.google_sheets.styler as S
 
 
 def check_sheets(sheet):
@@ -24,7 +24,17 @@ if __name__ == '__main__':
 
     sheet = gc.open_by_url(config["sheet_url"])
 
-
-
     # Select a worksheet/tab
     worksheet = sheet.worksheet("Test")
+    id_sheet = sheet.worksheet("Participants")
+
+    id = id_sheet.acell("B2").value
+    print(id)
+    from src.platforms import codeforces as cf
+    ids = set()
+    ids.add(id)
+
+    data = cf.adapter.extract_official(ids,2131)
+    print(data)
+    
+    worksheet.update("C5", [[data.participants[0].rank]])

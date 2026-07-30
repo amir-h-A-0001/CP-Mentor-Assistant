@@ -1,8 +1,6 @@
 import json
 import gspread
-import gs_api
-
-
+from . import client 
 
 # Text colors
 RESET = "\033[0m"
@@ -41,7 +39,7 @@ def create_participants_ws(sheet):
     print('[Participants] preparing style queries...\t')
     requests = []
 
-    requests.append(gs_api.update_row_height_request(
+    requests.append(client.update_row_height_request(
         sheet_id=ws_id,
         start_row=1,
         end_row=1,
@@ -49,7 +47,7 @@ def create_participants_ws(sheet):
     ))
 
     requests.append(
-        gs_api.update_column_width_request(
+        client.update_column_width_request(
             sheet_id=ws_id,
             start_col=1,
             end_col=1,
@@ -58,7 +56,7 @@ def create_participants_ws(sheet):
     )
 
     requests.append(
-        gs_api.update_column_width_request(
+        client.update_column_width_request(
             sheet_id=ws_id,
             start_col=2,
             end_col=3,
@@ -67,7 +65,7 @@ def create_participants_ws(sheet):
     )
 
     requests.append(
-        gs_api.update_font_request(
+        client.update_font_request(
             sheet_id=ws_id,
             start_row=1,
             end_row=1,
@@ -79,11 +77,11 @@ def create_participants_ws(sheet):
     )
 
     requests.append(
-        gs_api.center_sheet_request(sheet_id=ws_id)
+        client.center_sheet_request(sheet_id=ws_id)
     )
 
     requests.append(
-        gs_api.update_range_color_request(
+        client.update_range_color_request(
             sheet_id=ws_id,
             start_row=1,
             end_row=1,
@@ -95,7 +93,7 @@ def create_participants_ws(sheet):
     print(GREEN + 'Done\n' + RESET)
 
     print('[Participants] sending style queries...\t')
-    gs_api.send_batch_request(ws, requests)
+    client.send_batch_request(ws, requests)
     print()
     ws.update(
         range_name="A1:C1",
@@ -111,7 +109,7 @@ def create_contests_ws(sheet):
     print('[Contests] preparing style queries...\t')
     requests = []
 
-    requests.append(gs_api.update_row_height_request(
+    requests.append(client.update_row_height_request(
         sheet_id=ws_id,
         start_row=1,
         end_row=1,
@@ -119,7 +117,7 @@ def create_contests_ws(sheet):
     ))
 
     requests.append(
-        gs_api.update_column_width_request(
+        client.update_column_width_request(
             sheet_id=ws_id,
             start_col=1,
             end_col=1,
@@ -128,7 +126,7 @@ def create_contests_ws(sheet):
     )
 
     requests.append(
-        gs_api.update_column_width_request(
+        client.update_column_width_request(
             sheet_id=ws_id,
             start_col=2,
             end_col=2,
@@ -137,7 +135,7 @@ def create_contests_ws(sheet):
     )
 
     requests.append(
-        gs_api.update_column_width_request(
+        client.update_column_width_request(
             sheet_id=ws_id,
             start_col=3,
             end_col=3,
@@ -146,7 +144,7 @@ def create_contests_ws(sheet):
     )
 
     requests.append(
-        gs_api.update_column_width_request(
+        client.update_column_width_request(
             sheet_id=ws_id,
             start_col=4,
             end_col=4,
@@ -155,7 +153,7 @@ def create_contests_ws(sheet):
     )
 
     requests.append(
-        gs_api.update_column_width_request(
+        client.update_column_width_request(
             sheet_id=ws_id,
             start_col=5,
             end_col=5,
@@ -164,7 +162,7 @@ def create_contests_ws(sheet):
     )
 
     requests.append(
-        gs_api.update_font_request(
+        client.update_font_request(
             sheet_id=ws_id,
             start_row=1,
             end_row=1,
@@ -176,18 +174,18 @@ def create_contests_ws(sheet):
     )
 
     requests.append(
-        gs_api.center_sheet_request(sheet_id=ws_id)
+        client.center_sheet_request(sheet_id=ws_id)
     )
 
     requests.append(
-        gs_api.format_date_column_request(
+        client.format_date_column_request(
             sheet_id=ws_id,
             column=1
         )
     )
 
     requests.append(
-        gs_api.update_range_color_request(
+        client.update_range_color_request(
             sheet_id=ws_id,
             start_row=1,
             end_row=1,
@@ -199,7 +197,7 @@ def create_contests_ws(sheet):
     print(GREEN + 'Done\n' + RESET)
 
     print('[Contests] sending style queries...\t')
-    gs_api.send_batch_request(ws, requests)
+    client.send_batch_request(ws, requests)
     print()
     ws.update(
         range_name="A1:E1",
