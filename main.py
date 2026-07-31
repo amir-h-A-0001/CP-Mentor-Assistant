@@ -12,9 +12,6 @@ def check_sheets(sheet):
 
 
 
-
-
-
 if __name__ == '__main__':
     
     with open("config.json", "r") as f:
@@ -28,13 +25,21 @@ if __name__ == '__main__':
     worksheet = sheet.worksheet("Test")
     id_sheet = sheet.worksheet("Participants")
 
-    id = id_sheet.acell("B2").value
-    print(id)
-    from src.platforms import codeforces as cf
-    ids = set()
-    ids.add(id)
 
-    data = cf.adapter.extract_official(ids,2131)
-    print(data)
+
+    # S.create_contest_ws(sheet,"C1",['A','B','C','C2','D','E'])
+    S.prepare_contest_standing_row(sheet.worksheet("C1"),3,[1,1,-1,0,-1,0])
+
+
+    # from src.platforms import codeforces as cf
+
+    # ids = set()
+    # values = id_sheet.col_values(2)[1:6]
+
+    # for v in values:
+    #     ids.add(v)
+
+    # data = cf.adapter.get_contest_results(ids,2131)
+    # print(data)
     
-    worksheet.update("C5", [[data.participants[0].rank]])
+

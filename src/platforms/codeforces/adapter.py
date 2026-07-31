@@ -1,17 +1,18 @@
-import requests
-import json
-from . import api
+from . import api, calculator
 from src.models import *
 
-def extract_official(participants,contestID):
+def extract_official(participants_set,contestID):
 
     data = api.get_standings(contestID)
+
+    indices = [problem["index"] for problem in data["problems"]]
+
     participants_results = []
 
     for row in data["rows"]:
         username = row["party"]["members"][0]["handle"]
 
-        if username in participants:
+        if username in participants_set:
 
             problems = []
             solved = 0
@@ -40,6 +41,50 @@ def extract_official(participants,contestID):
         name=data["contest"]["name"],
         platform="Codeforces",
         number_of_problems= len(data["problems"]),
+        indices= indices,
         duration=data["contest"]["durationSeconds"],
         participants=participants_results
     )
+
+
+def get_performances(participants_set,contestID):
+
+    rating_data = api.get_rating_changes(contestID)
+    standing_data = api.get_standings(contestID)
+
+    standings_by_handle = {
+        row["party"]["members"][0]["handle"]: row
+        for row in standing_data["rows"]
+    }
+
+    all_contestants = []
+
+    for r_row in rating_data:
+        handle = r_row["handle"]
+        if handle not in standings_by_handle:
+            continue
+        s_row = standings_by_handle[handle]
+
+        all_contestants.append(
+            calculator.CF_Contestant(
+                handle=handle,
+                rating=r_row["oldRating"],
+                points=s_row["points"],
+                penalty=s_row["penalty"],
+            )
+        )
+
+    return calculator.calc(all_contestants,participants_set)
+
+
+def get_contest_results(participants_set, contestID, include_virtual=False):
+
+    result = extract_official(participants_set, contestID)
+    performances = get_performances(participants_set, contestID)
+
+    for participant in result.participants:
+        participant.performance = performances[participant.username]
+
+    # TODO add virtuals
+
+    return result

@@ -1,10 +1,9 @@
 from dataclasses import dataclass
-from functools import cmp_to_key
 import math
 
 
 @dataclass
-class Contestant:
+class CF_Contestant:
     handle: str
     rating: int
     points: float
@@ -17,131 +16,71 @@ class Contestant:
     performance: int = 0
 
 
-mem_ranks = [0.0] * 8001
+def _get_elo_win_probability(ra: float, rb: float) -> float:
+    return 1.0 / (1.0 + 10.0 ** ((rb - ra) / 400.0))
 
 
-def get_elo_win_probability(ra: int, rb: int) -> float:
-    return 1.0 / (1.0 + math.pow(10.0, (rb - ra) / 400.0))
+def _get_seed(contestants: list[CF_Contestant], rating: int, memo: dict[int, float]) -> float:
+    if rating not in memo:
+        memo[rating] = 1.0 + sum(
+            _get_elo_win_probability(c.rating, rating) for c in contestants
+        )
+    return memo[rating]
 
 
-def get_seed(contestants: list[Contestant], rating: int) -> float:
-    if mem_ranks[rating] == 0:
-        seed = 1.0
-
-        for contestant in contestants:
-            seed += get_elo_win_probability(contestant.rating, rating)
-
-        mem_ranks[rating] = seed
-
-    return mem_ranks[rating]
-
-
-def get_rating_to_rank(contestants: list[Contestant], rank: float) -> int:
-    left = 1
-    right = 8000
-
+def _get_rating_to_rank(contestants: list[CF_Contestant], rank: float, memo: dict[int, float]) -> int:
+    left, right = 1, 8000
     while right - left > 1:
         mid = (left + right) // 2
-
-        if get_seed(contestants, mid) < rank:
+        if _get_seed(contestants, mid, memo) < rank:
             right = mid
         else:
             left = mid
-
     return left
 
 
-def compare_contestants(ca: Contestant, cb: Contestant):
-    if ca.points == cb.points:
-        return cb.penalty - ca.penalty
-
-    return ca.points - cb.points
-
-
-def reassign_ranks(contestants: list[Contestant]):
-    contestants.sort(
-        key=cmp_to_key(lambda a, b: -compare_contestants(a, b))
-    )
+def _reassign_ranks(contestants: list[CF_Contestant]) -> None:
+    # Sort descending by points, ascending by penalty
+    contestants.sort(key=lambda c: (-c.points, c.penalty))
 
     first = 0
-
-    for i in range(1, len(contestants)):
-        if compare_contestants(contestants[first], contestants[i]) != 0:
+    n = len(contestants)
+    for i in range(1, n):
+        # Tied if both points and penalty match
+        if contestants[first].points != contestants[i].points or contestants[first].penalty != contestants[i].penalty:
             for j in range(first, i):
                 contestants[j].rank = i
             first = i
 
-    for i in range(first, len(contestants)):
-        contestants[i].rank = len(contestants)
+    for j in range(first, n):
+        contestants[j].rank = n
 
 
-def adjust_rating_changes(contestants: list[Contestant]):
+def _adjust_rating_changes(contestants: list[CF_Contestant]) -> None:
     contestants.sort(key=lambda c: c.rating, reverse=True)
+    n = len(contestants)
+    if n == 0:
+        return
 
-    all_sum = 0
-
-    for contestant in contestants:
-        all_sum += contestant.delta
-
-    all_inc = math.trunc(-all_sum / len(contestants)) - 1
-
-    for contestant in contestants:
-        contestant.delta += all_inc
+    all_sum = sum(c.delta for c in contestants)
+    all_inc = int(-all_sum / n) - 1
+    for c in contestants:
+        c.delta += all_inc
 
     top_count = min(
-        len(contestants),
-        4 * math.floor(math.sqrt(len(contestants)) + 0.5)
+        n,
+        4 * math.floor(math.sqrt(n) + 0.5)
     )
+    top_sum = sum(contestants[i].delta for i in range(top_count))
+    top_inc = min(max(int(-top_sum / top_count), -10), 0)
 
-    top_sum = 0
-
-    for contestant in contestants[:top_count]:
-        top_sum += contestant.delta
-
-    top_inc = min(
-        max(math.trunc(-top_sum / top_count), -10),
-        0,
-    )
-
-    for contestant in contestants[:top_count]:
-        contestant.delta += top_inc
+    for i in range(top_count):
+        contestants[i].delta += top_inc
 
     contestants.sort(key=lambda c: c.rank)
 
 
-def predict_rating_changes(contestants: list[Contestant]) -> list[Contestant]:
-    global mem_ranks
-
-    mem_ranks = [0.0] * 8001
-
-    reassign_ranks(contestants)
-
-    for contestant in contestants:
-        contestant.seed = get_seed(contestants, contestant.rating) - 0.5
-
-        mid_rank = math.sqrt(contestant.rank * contestant.seed)
-
-        contestant.need_rating = get_rating_to_rank(
-            contestants,
-            mid_rank,
-        )
-
-        contestant.delta = math.trunc(
-            (contestant.need_rating - contestant.rating) / 2
-        )
-
-        contestant.performance = get_rating_to_rank(
-            contestants,
-            contestant.rank,
-        )
-
-    adjust_rating_changes(contestants)
-
-    return contestants
-
-
-
-def calc(contestants: list[Contestant], handles: list[str] | None = None) -> dict[str, int]:
+def calc(contestants: list[CF_Contestant], handles: set[str] | None = None) -> dict[str, int]:
     """
     Calculates the performance rating for contestants.
 
@@ -153,29 +92,36 @@ def calc(contestants: list[Contestant], handles: list[str] | None = None) -> dic
     Returns:
         Dictionary mapping handle -> performance.
     """
+    if not contestants:
+        return {}
 
-    # TODO:
-    # contestants must contain EVERY rated contestant in the contest.
-    # Each Contestant must have:
-    #   - handle
-    #   - rating (old rating before the contest)
-    #   - points (official Codeforces points, NOT necessarily solved count)
-    #   - penalty
-    
+    # 1. Reassign ranks based on contest standings (points & penalty)
+    _reassign_ranks(contestants)
 
+    # 2. Compute seeds, need_rating, delta, and performance
+    memo: dict[int, float] = {}
 
-    predict_rating_changes(contestants)
+    for c in contestants:
+        c.seed = _get_seed(contestants, c.rating, memo) - 0.5
+        mid_rank = math.sqrt(c.rank * c.seed)
+        c.need_rating = _get_rating_to_rank(contestants, mid_rank, memo)
+        c.delta = int((c.need_rating - c.rating) / 2)
+        c.performance = _get_rating_to_rank(contestants, c.rank, memo)
 
+    # 3. Adjust rating changes (updates delta in-place)
+    _adjust_rating_changes(contestants)
+
+    # 4. Filter and return requested handles
     if handles is None:
         return {
-            contestant.handle: contestant.performance
+            contestant.handle: contestant.performance - 400
             for contestant in contestants
         }
 
-    handles = set(handles)
+    handles_set = set(handles)
 
     return {
-        contestant.handle: contestant.performance
+        contestant.handle: contestant.performance - 400
         for contestant in contestants
-        if contestant.handle in handles
+        if contestant.handle in handles_set
     }

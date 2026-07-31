@@ -46,7 +46,7 @@ def update_column_width_request(*, sheet_id, start_col, end_col, width):
 
 
 def update_range_color_request(*, sheet_id, start_row, end_row, start_col, end_col, color):
-    color=(224/255, 224/255, 224/255)
+    color=(color[0]/255, color[1]/255, color[2]/255)
 
     return {
         "repeatCell": {
@@ -80,17 +80,29 @@ def update_font_request(
     end_col,
     horizontalAlignment=None,
     verticalAlignment=None,
+    color=None,
     **text_format
 ):
+    if color is not None:
+        text_format["foregroundColor"] = {
+            "red": color[0] / 255.0,
+            "green": color[1] / 255.0,
+            "blue": color[2] / 255.0
+        }
+
     user_entered_format = {
         "textFormat": text_format
     }
 
+    fields_list = [f"userEnteredFormat.textFormat.{k}" for k in text_format]
+
     if horizontalAlignment is not None:
         user_entered_format["horizontalAlignment"] = horizontalAlignment
+        fields_list.append("userEnteredFormat.horizontalAlignment")
 
     if verticalAlignment is not None:
         user_entered_format["verticalAlignment"] = verticalAlignment
+        fields_list.append("userEnteredFormat.verticalAlignment")
 
     return {
         "repeatCell": {
@@ -104,7 +116,7 @@ def update_font_request(
             "cell": {
                 "userEnteredFormat": user_entered_format
             },
-            "fields": "userEnteredFormat"
+            "fields": ",".join(fields_list)
         }
     }
 
@@ -169,6 +181,27 @@ def format_date_column_request(*, sheet_id, column, pattern="yyyy-mm-dd"):
         }
     }
 
+
+def update_frozen_request(*, sheet_id, frozen_rows=None, frozen_columns=None):
+    properties = {"sheetId": sheet_id}
+    fields = []
+
+    if frozen_rows is not None:
+        properties["gridProperties"] = properties.get("gridProperties", {})
+        properties["gridProperties"]["frozenRowCount"] = frozen_rows
+        fields.append("gridProperties.frozenRowCount")
+
+    if frozen_columns is not None:
+        properties["gridProperties"] = properties.get("gridProperties", {})
+        properties["gridProperties"]["frozenColumnCount"] = frozen_columns
+        fields.append("gridProperties.frozenColumnCount")
+
+    return {
+        "updateSheetProperties": {
+            "properties": properties,
+            "fields": ",".join(fields)
+        }
+    }
 
 
 
