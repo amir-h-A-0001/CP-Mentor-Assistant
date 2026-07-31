@@ -1,5 +1,5 @@
 import json
-import gspread
+import src.google_sheets.client as client
 import src.google_sheets.styler as S
 
 
@@ -17,9 +17,9 @@ if __name__ == '__main__':
     with open("config.json", "r") as f:
         config = json.load(f)
 
-    gc = gspread.service_account(filename="key.json")
+    gc = client.GoogleClient("key.json")
 
-    sheet = gc.open_by_url(config["sheet_url"])
+    sheet = gc.open_sheet(config["sheet_url"])
 
     # Select a worksheet/tab
     worksheet = sheet.worksheet("Test")
@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
 
 
-    # S.create_contest_ws(sheet,"C1",['A','B','C','C2','D','E'])
+    S.create_contest_ws(sheet,"C1",['A','B','C','C2','D','E'])
     S.prepare_contest_standing_row(sheet.worksheet("C1"),3,[1,1,-1,0,-1,0])
 
 
