@@ -2,35 +2,20 @@ import json
 import gspread
 from . import spreadsheet 
 
-def clear_all(sheet):
-    try:
-        sheet.worksheet("Note")
-    except gspread.exceptions.WorksheetNotFound:
-        sheet.add_worksheet(
-            title="Note",
-            rows=100,
-            cols=20
-        )
 
-    for worksheet in sheet.worksheets():
-        if worksheet.title != "Note":
-            sheet.del_worksheet(worksheet)
+def prepare_participants_ws(worksheet):
 
-
-def create_participants_ws(sheet):
-
-    ws = sheet.add_worksheet("Participants", 1000, 5)
     requests = []
 
     requests.append(
-        ws.update_row_height_request(
+        worksheet.update_row_height_request(
             start_row=1,
             end_row=1,
             height=42
     ))
 
     requests.append(
-        ws.update_column_width_request(
+        worksheet.update_column_width_request(
             start_col=1,
             end_col=1,
             width=214
@@ -38,7 +23,7 @@ def create_participants_ws(sheet):
     )
 
     requests.append(
-        ws.update_column_width_request(
+        worksheet.update_column_width_request(
             start_col=2,
             end_col=3,
             width=130
@@ -46,7 +31,7 @@ def create_participants_ws(sheet):
     )
 
     requests.append(
-        ws.update_font_request(
+        worksheet.update_font_request(
             start_row=1,
             end_row=1,
             start_col=1,
@@ -57,42 +42,35 @@ def create_participants_ws(sheet):
     )
 
     requests.append(
-        ws.center_sheet_request()
+        worksheet.center_sheet_request()
     )
 
     requests.append(
-        ws.update_range_color_request(
+        worksheet.update_range_color_request(
             start_row=1,
             end_row=1,
             start_col=1,
             end_col=3,
-            color=(224.95,224.95,224.95)
+            color=(239,239,239)
         )
     )
 
-    ws.send_batch_request(requests)
-
-    # ws.update(
-    #     range_name="A1:C1",
-    #     values=[["FullName", "CF ID", "AtCoder ID"]]
-    # )
+    worksheet.send_batch_request(requests)
 
 
+def prepare_contests_list_ws(worksheet):
 
-def create_contests_list_ws(sheet):
-
-    ws = sheet.add_worksheet("Contests", 200, 5)
     requests = []
 
     requests.append(
-        ws.update_row_height_request(
+        worksheet.update_row_height_request(
             start_row=1,
             end_row=1,
             height=42
     ))
 
     requests.append(
-        ws.update_column_width_request(
+        worksheet.update_column_width_request(
             start_col=1,
             end_col=1,
             width=144
@@ -100,7 +78,7 @@ def create_contests_list_ws(sheet):
     )
 
     requests.append(
-        ws.update_column_width_request(
+        worksheet.update_column_width_request(
             start_col=2,
             end_col=2,
             width=340
@@ -108,7 +86,7 @@ def create_contests_list_ws(sheet):
     )
 
     requests.append(
-        ws.update_column_width_request(
+        worksheet.update_column_width_request(
             start_col=3,
             end_col=3,
             width=70
@@ -116,7 +94,7 @@ def create_contests_list_ws(sheet):
     )
 
     requests.append(
-        ws.update_column_width_request(
+        worksheet.update_column_width_request(
             start_col=4,
             end_col=4,
             width=130
@@ -124,7 +102,7 @@ def create_contests_list_ws(sheet):
     )
 
     requests.append(
-        ws.update_column_width_request(
+        worksheet.update_column_width_request(
             start_col=5,
             end_col=5,
             width=65
@@ -132,7 +110,7 @@ def create_contests_list_ws(sheet):
     )
 
     requests.append(
-        ws.update_font_request(
+        worksheet.update_font_request(
             start_row=1,
             end_row=1,
             start_col=1,
@@ -143,45 +121,39 @@ def create_contests_list_ws(sheet):
     )
 
     requests.append(
-        ws.center_sheet_request()
+        worksheet.center_sheet_request()
     )
 
     requests.append(
-        ws.format_date_column_request(
+        worksheet.format_date_column_request(
             column=1
         )
     )
 
     requests.append(
-        ws.update_range_color_request(
+        worksheet.update_range_color_request(
             start_row=1,
             end_row=1,
             start_col=1,
             end_col=5,
-            color=(224.95,224.95,224.95)
+            color=(239,239,239)
         )
     )
 
-    ws.send_batch_request(requests)
-
-    # ws.update(
-    #     range_name="A1:E1",
-    #     values=[["Date", "Contest Name", "Weight", "Short Name", "URL"]]
-    # )
+    worksheet.send_batch_request(requests)
 
 
-def create_contest_ws(sheet, short_name, indices):
+def prepare_contest_standings_ws(worksheet, short_name, indices):
 
     problems_count = len(indices)
-    ws = sheet.add_worksheet(short_name, 500, 6 + problems_count)
     requests = []
 
     requests.append(
-        ws.center_sheet_request()
+        worksheet.center_sheet_request()
         )
 
     requests.append(
-        ws.update_row_height_request(
+        worksheet.update_row_height_request(
             start_row=1,
             end_row=1,
             height=42
@@ -189,48 +161,56 @@ def create_contest_ws(sheet, short_name, indices):
     )
 
     requests.append(
-        ws.update_column_width_request(
+        worksheet.update_column_width_request(
             start_col=1,
             end_col=1,
+            width=52
+        )
+    )
+
+    requests.append(
+        worksheet.update_column_width_request(
+            start_col=2,
+            end_col=2,
             width=214
         )
     )
 
     requests.append(
-        ws.update_column_width_request(
-            start_col=2,
-            end_col=2,
+        worksheet.update_column_width_request(
+            start_col=3,
+            end_col=3,
             width=55
         )
     )
 
     requests.append(
-        ws.update_column_width_request(
-            start_col=3,
-            end_col=3,
+        worksheet.update_column_width_request(
+            start_col=4,
+            end_col=4,
             width=60
         )
     )
 
     requests.append(
-        ws.update_column_width_request(
-            start_col=4,
-            end_col=4,
+        worksheet.update_column_width_request(
+            start_col=5,
+            end_col=5,
             width=5
         )
     )
 
     requests.append(
-        ws.update_column_width_request(
-            start_col=5,
-            end_col=5-1 + problems_count,
+        worksheet.update_column_width_request(
+            start_col=6,
+            end_col=6-1 + problems_count,
             width=62
         )
     )
 
-    split = 5 + problems_count
+    split = 6 + problems_count
     requests.append(
-        ws.update_column_width_request(
+        worksheet.update_column_width_request(
             start_col=split,
             end_col=split,
             width=5
@@ -238,7 +218,7 @@ def create_contest_ws(sheet, short_name, indices):
     )
 
     requests.append(
-        ws.update_column_width_request(
+        worksheet.update_column_width_request(
             start_col=split+1,
             end_col=split+1,
             width=100
@@ -246,7 +226,7 @@ def create_contest_ws(sheet, short_name, indices):
     )
 
     requests.append(
-        ws.update_range_color_request(
+        worksheet.update_range_color_request(
             start_row=1,
             end_row=1,
             start_col=1,
@@ -256,24 +236,24 @@ def create_contest_ws(sheet, short_name, indices):
     )
 
     requests.append(
-        ws.update_range_color_request(
+        worksheet.update_range_color_request(
             start_row=1,
             end_row=1,
-            start_col=4,
-            end_col=4,
+            start_col=5,
+            end_col=5,
             color=(153,153,153)
         )
     )
 
     requests.append(
-        ws.update_frozen_request(
+        worksheet.update_frozen_request(
             frozen_rows=1,
-            frozen_columns=1
+            frozen_columns=2
         )
     )
 
     requests.append(
-        ws.update_row_height_request(
+        worksheet.update_row_height_request(
             start_row=2,
             end_row=2,
             height=8
@@ -281,7 +261,7 @@ def create_contest_ws(sheet, short_name, indices):
     )
 
     requests.append(
-        ws.update_font_request(
+        worksheet.update_font_request(
             start_row=1,
             end_row=1,
             start_col=1,
@@ -290,12 +270,7 @@ def create_contest_ws(sheet, short_name, indices):
         )
     )
 
-    ws.send_batch_request(requests)
-
-    # ws.update(
-    #     range_name="A1",
-    #     values=[["Contestant", "Solved", "Penalty", ""] + indices + ["", "Performance"]]
-    # )
+    worksheet.send_batch_request(requests)
 
 
 def _accepted_cell_style(ws, row, col):
@@ -384,7 +359,7 @@ def prepare_contest_standing_row(contest_worksheet, row, judge_results):
             start_row=row,
             end_row=row+1,
             start_col=1,
-            end_col=1,
+            end_col=2,
             color=(204,204,204)
         )
     )
@@ -393,8 +368,8 @@ def prepare_contest_standing_row(contest_worksheet, row, judge_results):
         contest_worksheet.update_range_color_request(
             start_row=row,
             end_row=row+1,
-            start_col=2,
-            end_col=3,
+            start_col=3,
+            end_col=4,
             color=(217,217,217)
         )
     )
@@ -404,7 +379,7 @@ def prepare_contest_standing_row(contest_worksheet, row, judge_results):
             start_row=row,
             end_row=row+1,
             start_col=1,
-            end_col=3,
+            end_col=4,
             fontFamily="Lexend"
         )
     )
@@ -414,28 +389,28 @@ def prepare_contest_standing_row(contest_worksheet, row, judge_results):
             start_row=row+1,
             end_row=row+1,
             start_col=1,
-            end_col=3,
+            end_col=4,
             color=(102,102,102)
         )
     )
 
     requests.append(
         contest_worksheet.update_range_color_request(
-            start_row=row+1,
-            end_row=row,
-            start_col=4,
-            end_col=4,
+            start_row=row,
+            end_row=row+1,
+            start_col=5,
+            end_col=5,
             color=(153,153,153)
         )
     )
 
 
-    start_col = 5
+    start_col = 6
     requests.append(
         contest_worksheet.update_range_color_request(
             start_row=row,
             end_row=row+1,
-            start_col=5,
+            start_col=start_col,
             end_col=start_col + problems_count + 1,
             color=(239,239,239)
         )
@@ -459,3 +434,8 @@ def prepare_contest_standing_row(contest_worksheet, row, judge_results):
         requests.extend(cell_style(contest_worksheet, row,start_col+i))
 
     contest_worksheet.send_batch_request(requests)
+
+
+def prepare_all_results_page(ws):
+
+    ...

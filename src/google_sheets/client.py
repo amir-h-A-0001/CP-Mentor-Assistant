@@ -2,10 +2,10 @@ import gspread
 from .spreadsheet import GoogleSpreadSheet
 
 class GoogleClient:
-    def __init__(self, creds_path):
+    def __init__(self, creds_path: str):
             self._gc = gspread.service_account(filename=creds_path)
 
-    def open_sheet(self, url):
+    def open_sheet(self, url: str) -> GoogleSpreadSheet:
         return GoogleSpreadSheet(self._gc.open_by_url(url))
 
     def share_spreadsheet(self, spreadsheet_url_or_key: str, email: str, role: str = "reader", notify: bool = True):

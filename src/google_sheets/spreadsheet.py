@@ -1,71 +1,92 @@
+from __future__ import annotations
+
+from typing import Any, Dict, List, Optional, Tuple, Union
 import gspread
 
-class GoogleSpreadSheet:
-    def __init__(self, spreadSheet):
-        self._sheet = spreadSheet        
 
-    def worksheet(self, ws_name):
-        ws = self._sheet.worksheet(ws_name)
+class GoogleSpreadSheet:
+    def __init__(self, spreadSheet: gspread.Spreadsheet) -> None:
+        self._sheet: gspread.Spreadsheet = spreadSheet
+
+    def worksheet(self, ws_name: str) -> GoogleWorksheet:
+        ws: gspread.Worksheet = self._sheet.worksheet(ws_name)
         return GoogleWorksheet(self, ws)
 
-    def worksheets(self):
+    def worksheets(self) -> List[GoogleWorksheet]:
         return [
             GoogleWorksheet(self, ws)
             for ws in self._sheet.worksheets()
         ]
 
-    def send_batch_request(self, requests):
+    def send_batch_request(self, requests: List[Dict[str, Any]]) -> Dict[str, Any]:
         return self._sheet.batch_update({
             "requests": requests
         })
 
-    def del_worksheet(self, worksheet):
+    def del_worksheet(self, worksheet: gspread.Worksheet) -> None:
         self._sheet.del_worksheet(worksheet)
 
-    def add_worksheet(self, name, rows, columns):
-        ws = self._sheet.add_worksheet(name, rows, columns)
+    def add_worksheet(self, name: str, rows: int, columns: int) -> GoogleWorksheet:
+        ws: gspread.Worksheet = self._sheet.add_worksheet(name, rows, columns)
         return GoogleWorksheet(self, ws)
 
 
-
 class GoogleWorksheet:
-    def __init__(self, parent, worksheet):
-        self._ws = worksheet
-        self.parent = parent
+    def __init__(self, parent: GoogleSpreadSheet, worksheet: gspread.Worksheet) -> None:
+        self._ws: gspread.Worksheet = worksheet
+        self.parent: GoogleSpreadSheet = parent
 
     @property
-    def title(self):
+    def title(self) -> str:
         return self._ws.title
 
     @property
-    def id(self):
+    def id(self) -> int:
         return self._ws.id
+
+    def col_values(self, col: int) -> list[Any]:
+        return self._ws.col_values(col)
 
     def update(
         self,
-        range_name: str,
-        values,
-        value_input_option="RAW"
-    ):
-        self._ws.update(
+        values: List[List[Any]],
+        range_name: Optional[str] = None,
+        row: Optional[int] = None,
+        col: Optional[int] = None,
+        value_input_option: str = "RAW",
+    ) -> Dict[str, Any]:
+
+        if range_name is None:
+            if row is None or col is None:
+                raise ValueError(
+                    "Either range_name or both row and col must be provided."
+                )
+            range_name = gspread.utils.rowcol_to_a1(row, col)
+
+        return self._ws.update(
             range_name=range_name,
             values=values,
             value_input_option=value_input_option,
         )
 
 
-    def clear_worksheet_request(*, sheet_id):
+    def clear_worksheet_request(self) -> Dict[str, Any]:
         return {
             "updateCells": {
                 "range": {
-                    "sheetId": sheet_id
+                    "sheetId": self._ws.id
                 },
                 "fields": "*"
             }
         }
 
-
-    def update_row_height_request(self, *, start_row, end_row, height):
+    def update_row_height_request(
+        self,
+        *,
+        start_row: int,
+        end_row: int,
+        height: int
+    ) -> Dict[str, Any]:
         return {
             "updateDimensionProperties": {
                 "range": {
@@ -81,8 +102,13 @@ class GoogleWorksheet:
             }
         }
 
-
-    def update_column_width_request(self, *, start_col, end_col, width):
+    def update_column_width_request(
+        self,
+        *,
+        start_col: int,
+        end_col: int,
+        width: int
+    ) -> Dict[str, Any]:
         return {
             "updateDimensionProperties": {
                 "range": {
@@ -98,9 +124,20 @@ class GoogleWorksheet:
             }
         }
 
-
-    def update_range_color_request(self, *, start_row, end_row, start_col, end_col, color):
-        color=(color[0]/255, color[1]/255, color[2]/255)
+    def update_range_color_request(
+        self,
+        *,
+        start_row: int,
+        end_row: int,
+        start_col: int,
+        end_col: int,
+        color: Union[Tuple[int, int, int], List[int]]
+    ) -> Dict[str, Any]:
+        normalized_color = (
+            color[0] / 255.0,
+            color[1] / 255.0,
+            color[2] / 255.0
+        )
 
         return {
             "repeatCell": {
@@ -114,9 +151,9 @@ class GoogleWorksheet:
                 "cell": {
                     "userEnteredFormat": {
                         "backgroundColor": {
-                            "red": color[0],
-                            "green": color[1],
-                            "blue": color[2]
+                            "red": normalized_color[0],
+                            "green": normalized_color[1],
+                            "blue": normalized_color[2]
                         }
                     }
                 },
@@ -124,18 +161,18 @@ class GoogleWorksheet:
             }
         }
 
-
     def update_font_request(
-        self, *,
-        start_row,
-        end_row,
-        start_col,
-        end_col,
-        horizontalAlignment=None,
-        verticalAlignment=None,
-        color=None,
-        **text_format
-    ):
+        self,
+        *,
+        start_row: int,
+        end_row: int,
+        start_col: int,
+        end_col: int,
+        horizontalAlignment: Optional[str] = None,
+        verticalAlignment: Optional[str] = None,
+        color: Optional[Union[Tuple[int, int, int], List[int]]] = None,
+        **text_format: Any
+    ) -> Dict[str, Any]:
         if color is not None:
             text_format["foregroundColor"] = {
                 "red": color[0] / 255.0,
@@ -143,11 +180,11 @@ class GoogleWorksheet:
                 "blue": color[2] / 255.0
             }
 
-        user_entered_format = {
+        user_entered_format: Dict[str, Any] = {
             "textFormat": text_format
         }
 
-        fields_list = [f"userEnteredFormat.textFormat.{k}" for k in text_format]
+        fields_list: List[str] = [f"userEnteredFormat.textFormat.{k}" for k in text_format]
 
         if horizontalAlignment is not None:
             user_entered_format["horizontalAlignment"] = horizontalAlignment
@@ -173,9 +210,14 @@ class GoogleWorksheet:
             }
         }
 
-
-    def update_formula_request(self, *, start_row, end_row, column, formula):
-        
+    def update_formula_request(
+        self,
+        *,
+        start_row: int,
+        end_row: int,
+        column: int,
+        formula: str
+    ) -> Dict[str, Any]:
         return {
             "repeatCell": {
                 "range": {
@@ -194,7 +236,7 @@ class GoogleWorksheet:
             }
         }
 
-    def center_sheet_request(self):
+    def center_sheet_request(self) -> Dict[str, Any]:
         return {
             "repeatCell": {
                 "range": {
@@ -213,8 +255,12 @@ class GoogleWorksheet:
             }
         }
 
-
-    def format_date_column_request(self, *, column, pattern="yyyy-mm-dd"):
+    def format_date_column_request(
+        self,
+        *,
+        column: int,
+        pattern: str = "yyyy-mm-dd"
+    ) -> Dict[str, Any]:
         return {
             "repeatCell": {
                 "range": {
@@ -234,10 +280,14 @@ class GoogleWorksheet:
             }
         }
 
-
-    def update_frozen_request(self, *,frozen_rows=None, frozen_columns=None):
-        properties = {"sheetId": self._ws.id}
-        fields = []
+    def update_frozen_request(
+        self,
+        *,
+        frozen_rows: Optional[int] = None,
+        frozen_columns: Optional[int] = None
+    ) -> Dict[str, Any]:
+        properties: Dict[str, Any] = {"sheetId": self._ws.id}
+        fields: List[str] = []
 
         if frozen_rows is not None:
             properties["gridProperties"] = properties.get("gridProperties", {})
@@ -256,6 +306,5 @@ class GoogleWorksheet:
             }
         }
 
-    def send_batch_request(self, requests):
+    def send_batch_request(self, requests: List[Dict[str, Any]]) -> Dict[str, Any]:
         return self.parent.send_batch_request(requests)
-    

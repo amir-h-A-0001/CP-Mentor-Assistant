@@ -1,5 +1,6 @@
 import json
 import src.google_sheets.client as client
+import src.google_sheets.services as srv
 import src.google_sheets.styler as S
 
 
@@ -22,24 +23,34 @@ if __name__ == '__main__':
     sheet = gc.open_sheet(config["sheet_url"])
 
     # Select a worksheet/tab
-    worksheet = sheet.worksheet("Test")
+    # worksheet = sheet.worksheet("Test")
     id_sheet = sheet.worksheet("Participants")
 
+    from src.platforms import codeforces as cf
+
+    ids = set()
+    cf_ifs = id_sheet.col_values(2)[1:7]
+    names = id_sheet.col_values(1)[1:7]
+
+    n_i_dict = {
+        id: name 
+        for id, name in zip(cf_ifs, names)
+    }
+
+    for v in cf_ifs:
+        ids.add(v)
 
 
-    S.create_contest_ws(sheet,"C1",['A','B','C','C2','D','E'])
-    S.prepare_contest_standing_row(sheet.worksheet("C1"),3,[1,1,-1,0,-1,0])
+    print('participants:')
+    print(n_i_dict)
 
+    print("reciving contest standings from cf...")
+    data = cf.adapter.get_contest_results(ids,2131)
+    print("data received")
 
-    # from src.platforms import codeforces as cf
-
-    # ids = set()
-    # values = id_sheet.col_values(2)[1:6]
-
-    # for v in values:
-    #     ids.add(v)
-
-    # data = cf.adapter.get_contest_results(ids,2131)
-    # print(data)
+    print([p.username for p in data.participants])
     
+    print("recording in sheet...")
+    srv.create_contest_standings_page(sheet,data,n_i_dict,"CF_1042",50)
+    print("Done !")    
 

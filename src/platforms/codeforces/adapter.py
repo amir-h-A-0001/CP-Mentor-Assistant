@@ -39,10 +39,8 @@ def extract_official(participants_set,contestID):
 
     return Contest(
         name=data["contest"]["name"],
-        platform="Codeforces",
         number_of_problems= len(data["problems"]),
-        indices= indices,
-        duration=data["contest"]["durationSeconds"],
+        problem_indices= indices,
         participants=participants_results
     )
 
