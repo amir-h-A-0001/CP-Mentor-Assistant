@@ -99,4 +99,26 @@ def create_contest_standings_page(sheet, contest: Contest, name_dict, short_name
         current_row += 3
        
     return worksheet
-    
+
+
+def create_final_results_page(sheet, data):
+    ...
+
+# data retreival
+
+def get_participant_names(sheet):
+    ws = sheet.worksheet('Participants')
+    return ws.col_values(1)[1:]
+
+def get_participant_ids(sheet, col):
+    ws = sheet.worksheet('Participants')
+    return ws.col_values(col)[1:]
+
+def get_platforms(sheet):
+    ws = sheet.worksheet('Participants')
+    return ws.row_values(1)[1:]
+
+def get_final_results(sheet):
+    ...
+
+        

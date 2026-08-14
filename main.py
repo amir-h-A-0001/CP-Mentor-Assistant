@@ -23,34 +23,53 @@ if __name__ == '__main__':
     sheet = gc.open_sheet(config["sheet_url"])
 
     # Select a worksheet/tab
-    # worksheet = sheet.worksheet("Test")
-    id_sheet = sheet.worksheet("Participants")
+    worksheet = sheet.worksheet("Test")
 
-    from src.platforms import codeforces as cf
-
-    ids = set()
-    cf_ifs = id_sheet.col_values(2)[1:7]
-    names = id_sheet.col_values(1)[1:7]
-
-    n_i_dict = {
-        id: name 
-        for id, name in zip(cf_ifs, names)
-    }
-
-    for v in cf_ifs:
-        ids.add(v)
+    S.prepare_results_page(worksheet,12,10,final=False)
 
 
-    print('participants:')
-    print(n_i_dict)
+    # s = sheet.index_to_a1(4,2)
+    # e = sheet.index_to_a1(4,21)
 
-    print("reciving contest standings from cf...")
-    data = cf.adapter.get_contest_results(ids,2131)
-    print("data received")
+    # print(s,e)
+    # print(f"=COUNTBLANK({s}:{e}) / 2")
 
-    print([p.username for p in data.participants])
+    # worksheet.send_batch_request(
+    #     worksheet.update_formula_request(
+    #         start_row=4,
+    #         end_row=12,
+    #         column=22,
+    #         formula=f"=COUNTBLANK({s}:{e}) / 2"
+    #     )
+    # )
+
+    # id_sheet = sheet.worksheet("Participants")
+
+    # from src.platforms import codeforces as cf
+
+    # ids = set()
+    # cf_ifs = id_sheet.col_values(2)[1:7]
+    # names = id_sheet.col_values(1)[1:7]
+
+    # n_i_dict = {
+    #     id: name 
+    #     for id, name in zip(cf_ifs, names)
+    # }
+
+    # for v in cf_ifs:
+    #     ids.add(v)
+
+
+    # print('participants:')
+    # print(n_i_dict)
+
+    # print("reciving contest standings from cf...")
+    # data = cf.adapter.get_contest_results(ids,2131)
+    # print("data received")
+
+    # print([p.username for p in data.participants])
     
-    print("recording in sheet...")
-    srv.create_contest_standings_page(sheet,data,n_i_dict,"CF_1042",50)
-    print("Done !")    
+    # print("recording in sheet...")
+    # srv.create_contest_standings_page(sheet,data,n_i_dict,"CF_1042",50)
+    # print("Done !")    
 

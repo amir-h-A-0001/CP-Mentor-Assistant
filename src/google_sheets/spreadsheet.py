@@ -30,6 +30,10 @@ class GoogleSpreadSheet:
         ws: gspread.Worksheet = self._sheet.add_worksheet(name, rows, columns)
         return GoogleWorksheet(self, ws)
 
+    @staticmethod
+    def index_to_a1(row: int,col: int) -> str:
+        return gspread.utils.rowcol_to_a1(row, col)
+
 
 class GoogleWorksheet:
     def __init__(self, parent: GoogleSpreadSheet, worksheet: gspread.Worksheet) -> None:
@@ -46,6 +50,9 @@ class GoogleWorksheet:
 
     def col_values(self, col: int) -> list[Any]:
         return self._ws.col_values(col)
+
+    def row_values(self, row: int) -> list[Any]:
+            return self._ws.row_values(row)
 
     def update(
         self,
@@ -303,6 +310,35 @@ class GoogleWorksheet:
             "updateSheetProperties": {
                 "properties": properties,
                 "fields": ",".join(fields)
+            }
+        }
+
+    def merge_cells_request(
+        self, *,
+        start_row: int,
+        end_row: int,
+        start_col: int,
+        end_col: int,
+        merge_type: str = "MERGE_ALL",
+    ) -> Dict[str, Any]:
+        """
+        Rows and columns are 1-based and inclusive.
+        merge_type can be:
+            - "MERGE_ALL" (default)
+            - "MERGE_ROWS"
+            - "MERGE_COLUMNS"
+        """
+
+        return {
+            "mergeCells": {
+                "range": {
+                    "sheetId": self._ws.id,
+                    "startRowIndex": start_row - 1,
+                    "endRowIndex": end_row,
+                    "startColumnIndex": start_col - 1,
+                    "endColumnIndex": end_col,
+                },
+                "mergeType": merge_type,
             }
         }
 

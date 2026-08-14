@@ -273,11 +273,11 @@ def prepare_contest_standings_ws(worksheet, short_name, indices):
     worksheet.send_batch_request(requests)
 
 
-def _accepted_cell_style(ws, row, col):
+def _accepted_cell_style(worksheet, row, col):
     requests = []
 
     requests.append(
-        ws.update_range_color_request(
+        worksheet.update_range_color_request(
             start_row=row,
             end_row=row+1,
             start_col=col,
@@ -287,7 +287,7 @@ def _accepted_cell_style(ws, row, col):
     )
 
     requests.append(
-        ws.update_font_request(
+        worksheet.update_font_request(
             start_row=row,
             end_row=row,
             start_col=col,
@@ -299,11 +299,11 @@ def _accepted_cell_style(ws, row, col):
 
     return requests
 
-def _rejected_cell_style(ws, row, col):
+def _rejected_cell_style(worksheet, row, col):
     requests = []
 
     requests.append(
-        ws.update_range_color_request(
+        worksheet.update_range_color_request(
             start_row=row,
             end_row=row+1,
             start_col=col,
@@ -313,7 +313,7 @@ def _rejected_cell_style(ws, row, col):
     )
 
     requests.append(
-        ws.update_font_request(
+        worksheet.update_font_request(
             start_row=row,
             end_row=row,
             start_col=col,
@@ -325,13 +325,13 @@ def _rejected_cell_style(ws, row, col):
 
     return requests
 
-def prepare_contest_standing_row(contest_worksheet, row, judge_results):
+def prepare_contest_standing_row(worksheet, row, judge_results):
 
     problems_count = len(judge_results)
     requests = []
 
     requests.append(
-        contest_worksheet.update_row_height_request(
+        worksheet.update_row_height_request(
             start_row=row,
             end_row=row,
             height=36
@@ -339,7 +339,7 @@ def prepare_contest_standing_row(contest_worksheet, row, judge_results):
     )
 
     requests.append(
-        contest_worksheet.update_row_height_request(
+        worksheet.update_row_height_request(
             start_row=row+1,
             end_row=row+1,
             height=23
@@ -347,7 +347,7 @@ def prepare_contest_standing_row(contest_worksheet, row, judge_results):
     )
 
     requests.append(
-        contest_worksheet.update_row_height_request(
+        worksheet.update_row_height_request(
             start_row=row+2,
             end_row=row+2,
             height=8
@@ -355,7 +355,7 @@ def prepare_contest_standing_row(contest_worksheet, row, judge_results):
     )
 
     requests.append(
-        contest_worksheet.update_range_color_request(
+        worksheet.update_range_color_request(
             start_row=row,
             end_row=row+1,
             start_col=1,
@@ -365,7 +365,7 @@ def prepare_contest_standing_row(contest_worksheet, row, judge_results):
     )
 
     requests.append(
-        contest_worksheet.update_range_color_request(
+        worksheet.update_range_color_request(
             start_row=row,
             end_row=row+1,
             start_col=3,
@@ -375,7 +375,7 @@ def prepare_contest_standing_row(contest_worksheet, row, judge_results):
     )
 
     requests.append(
-        contest_worksheet.update_font_request(
+        worksheet.update_font_request(
             start_row=row,
             end_row=row+1,
             start_col=1,
@@ -385,7 +385,7 @@ def prepare_contest_standing_row(contest_worksheet, row, judge_results):
     )
 
     requests.append(
-        contest_worksheet.update_font_request(
+        worksheet.update_font_request(
             start_row=row+1,
             end_row=row+1,
             start_col=1,
@@ -395,7 +395,7 @@ def prepare_contest_standing_row(contest_worksheet, row, judge_results):
     )
 
     requests.append(
-        contest_worksheet.update_range_color_request(
+        worksheet.update_range_color_request(
             start_row=row,
             end_row=row+1,
             start_col=5,
@@ -407,7 +407,7 @@ def prepare_contest_standing_row(contest_worksheet, row, judge_results):
 
     start_col = 6
     requests.append(
-        contest_worksheet.update_range_color_request(
+        worksheet.update_range_color_request(
             start_row=row,
             end_row=row+1,
             start_col=start_col,
@@ -417,7 +417,7 @@ def prepare_contest_standing_row(contest_worksheet, row, judge_results):
     )
 
     requests.append(
-        contest_worksheet.update_font_request(
+        worksheet.update_font_request(
             start_row=row+1,
             end_row=row+1,
             start_col=start_col,
@@ -431,11 +431,327 @@ def prepare_contest_standing_row(contest_worksheet, row, judge_results):
             continue
 
         cell_style = _accepted_cell_style if res > 0 else _rejected_cell_style
-        requests.extend(cell_style(contest_worksheet, row,start_col+i))
+        requests.extend(cell_style(worksheet, row,start_col+i))
 
-    contest_worksheet.send_batch_request(requests)
+    worksheet.send_batch_request(requests)
 
 
-def prepare_all_results_page(ws):
+def _results_header(worksheet,length):
 
-    ...
+    requests = []
+
+    requests.append(
+        worksheet.merge_cells_request(
+            start_row=1,
+            end_row=1,
+            start_col=2,
+            end_col=length - 1,
+        )
+    )
+
+    requests.append(
+        worksheet.update_row_height_request(
+            start_row=1,
+            end_row=1,
+            height=150
+        )
+    )
+
+    requests.append(
+        worksheet.update_range_color_request(
+            start_row=1,
+            end_row=1,
+            start_col=1,
+            end_col=length,
+            color=(255,242,204)
+        )
+    )
+
+    requests.append(
+        worksheet.update_font_request(
+            start_row=1,
+            end_row=1,
+            start_col=1,
+            end_col=length,
+            font_family="Oswald",
+            font_size=24,
+            bold=True,
+            color=(180, 95, 6)
+        )
+    )
+
+    return requests
+
+def _result_column(worksheet, rows, header_row, column_idx):
+
+    requests = []
+
+    requests.append(
+        worksheet.merge_cells_request(
+            start_row=header_row,
+            end_row=header_row,
+            start_col=column_idx,
+            end_col=column_idx+1
+        )
+    )
+
+    requests.append(
+        worksheet.update_range_color_request(
+            start_row=header_row,
+            end_row=header_row,
+            start_col=column_idx,
+            end_col=column_idx,
+            color=(247,203,77)
+        )
+    )
+
+    requests.append(
+        worksheet.update_range_color_request(
+            start_row=header_row+2,
+            end_row= header_row+2 + rows - 1,
+            start_col=column_idx,
+            end_col= column_idx + 1,
+            color= (255,229,153) if (column_idx // 2) % 2 == 0 else (255,242,204)
+        )
+    )
+
+    return requests
+
+
+def _names_culumn(worksheet, rows, header_row, column_idx):
+
+    requests = []
+
+    requests.append(
+        worksheet.update_column_width_request(
+            start_col=column_idx,
+            end_col=column_idx,
+            width=150
+        )
+    )
+
+    requests.append(
+            worksheet.merge_cells_request(
+                start_row=header_row,
+                end_row=header_row+1,
+                start_col=column_idx,
+                end_col=column_idx
+            )
+        )
+
+    requests.append(
+        worksheet.update_row_height_request(
+            start_row=header_row+2,
+            end_row= header_row+2 + rows -1,
+            height=42 
+        )
+    )
+
+    requests.append(
+        worksheet.update_range_color_request(
+            start_row=header_row,
+            end_row=header_row+1,
+            start_col=column_idx,
+            end_col=column_idx,
+            color=(38,166,154)
+        )
+    )
+
+    requests.append(
+        worksheet.update_range_color_request(
+            start_row=header_row+2,
+            end_row= header_row+2 + rows - 1,
+            start_col=column_idx,
+            end_col=column_idx,
+            color=(221,242,240)
+        )
+    )
+
+    requests.append(
+        worksheet.update_font_request(
+            start_row=header_row+2,
+            end_row=header_row+2 + rows - 1,
+            start_col=column_idx,
+            end_col=column_idx,
+            font_family="Georgia"
+        )
+    )
+
+    return requests
+
+def _absence_column(worksheet, rows, header_row, column_idx):
+
+    requests = []
+
+    requests.append(
+        worksheet.update_column_width_request(
+            start_col=column_idx,
+            end_col=column_idx,
+            width=150
+        )
+    )
+
+    requests.append(
+        worksheet.merge_cells_request(
+            start_row=header_row,
+            end_row=header_row+1,
+            start_col=column_idx,
+            end_col=column_idx
+        )
+    )
+
+    requests.append(
+        worksheet.update_range_color_request(
+            start_row=header_row,
+            end_row=header_row,
+            start_col=column_idx,
+            end_col=column_idx,
+            color=(204,65,37)
+        )
+    )
+
+    requests.append(
+        worksheet.update_range_color_request(
+            start_row=header_row+2,
+            end_row=header_row+2 + rows - 1,
+            start_col=column_idx,
+            end_col=column_idx,
+            color=(221,126,107)
+        )
+    )
+    
+    return requests
+
+
+
+def _final_scores_columns(worksheet, rows, header_row, column_idx):
+
+    requests = []
+
+    requests.append(
+        worksheet.update_column_width_request(
+            start_col=column_idx+1,
+            end_col=column_idx+1,
+            width=150
+        )
+    )
+
+    requests.append(
+        worksheet.update_range_color_request(
+            start_row=header_row,
+            end_row=header_row,
+            start_col=column_idx,
+            end_col=column_idx,
+            color=(241,194,50)
+        )
+    )
+    
+    requests.append(
+        worksheet.update_range_color_request(
+            start_row=header_row+2,
+            end_row= header_row+2 + rows - 1,
+            start_col=column_idx,
+            end_col= column_idx,
+            color= (255,229,153) if (column_idx // 2) % 2 == 0 else (255,242,204)
+        )
+    )
+
+    requests.append(
+        worksheet.update_font_request(
+            start_row=header_row,
+            end_row=header_row,
+            start_col=column_idx,
+            end_col=column_idx + 1,
+            color=(255,255,255)
+        )
+    )
+
+    requests.append(
+        worksheet.update_range_color_request(
+            start_row=header_row,
+            end_row=header_row,
+            start_col=column_idx + 1,
+            end_col=column_idx + 1,
+            color=(204,65,37)
+        )
+    )
+
+    requests.append(
+        worksheet.update_range_color_request(
+            start_row=header_row+2,
+            end_row=header_row+2 + rows - 1,
+            start_col=column_idx + 1,
+            end_col=column_idx + 1,
+            color=(221,126,107)
+        )
+    )
+
+    return requests
+
+
+def prepare_results_page(worksheet, rows, columns, final):
+
+    header_row = 1
+    requests = []
+
+    requests.append(
+        worksheet.center_sheet_request()
+    )
+
+    if final:
+        requests.extend(
+            _results_header(
+                worksheet=worksheet,
+                length=columns * 2 + (3 if final else 2)
+            )
+        )
+        header_row = 2
+
+    requests.append(
+        worksheet.update_font_request(
+            start_row=header_row,
+            end_row= header_row + 2 + rows - 1,
+            start_col=1,
+            end_col= columns * 2 + (3 if final else 2),
+            font_family="Oswald"
+        )
+    )
+
+    requests.extend(
+        _names_culumn(
+            worksheet,
+            header_row=header_row,
+            column_idx=1,
+            rows=rows
+        )
+    )
+
+    for i in range(columns):
+        requests.extend(
+            _result_column(
+                worksheet=worksheet,
+                rows=rows,
+                header_row=header_row,
+                column_idx= 2 + i * 2
+            )
+        )
+
+    last_columns = _final_scores_columns if final else _absence_column
+
+    requests.extend(
+        last_columns(
+            worksheet=worksheet,
+            rows=rows,
+            header_row=header_row,
+            column_idx= 2 + columns * 2
+        )
+    )
+
+    requests.append(
+        worksheet.update_frozen_request(
+            frozen_rows= 3 if final else 2,
+            frozen_columns=1
+        )
+    )
+
+    worksheet.send_batch_request(requests)
