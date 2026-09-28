@@ -755,3 +755,69 @@ def prepare_results_page(worksheet, rows, columns, final):
     )
 
     worksheet.send_batch_request(requests)
+
+
+def insert_contest_result_col(worksheet : spreadsheet.GoogleWorksheet, rows, insert_col):
+
+    requests = []
+
+    requests.append(
+        worksheet.unmerge_cells_request(
+            start_row= 1,
+            end_row= 2,
+            start_col= insert_col,
+            end_col=insert_col
+        )
+    )
+
+    requests.append(
+        worksheet.clear_formatting_request(
+            start_row=2,
+            end_row=2,
+            start_col=insert_col,
+            end_col=insert_col + 1
+        )
+    )
+
+    requests.append(
+        worksheet.update_font_request(
+            start_row=2,
+            end_row=2,
+            start_col=insert_col,
+            end_col= insert_col + 1,
+            font_family="Oswald"
+        )
+    )
+
+    requests.append(
+        worksheet.center_sheet_request()
+    )
+
+    requests.extend(
+        _result_column(
+                worksheet=worksheet,
+                rows=rows,
+                header_row=1,
+                column_idx=insert_col
+        )
+    )    
+    
+    requests.extend(
+        _absence_column(
+            worksheet=worksheet,
+            rows=rows,
+            header_row=1,
+            column_idx= insert_col + 2
+        )
+    )
+
+    requests.append(
+        worksheet.update_column_width_request(
+            start_col= insert_col,
+            end_col=insert_col+1,
+            width=100
+        )
+    )
+
+
+    worksheet.send_batch_request(requests)

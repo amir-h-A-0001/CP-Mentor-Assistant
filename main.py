@@ -4,15 +4,6 @@ import src.google_sheets.services as srv
 import src.google_sheets.styler as S
 
 
-def check_sheets(sheet):
-    required_worksheets = ['Participants','Contests','Main']
-    existing_worksheets = {ws.title for ws in sheet.worksheets()}
-    return all(ws in existing_worksheets for ws in required_worksheets)
-
-
-
-
-
 if __name__ == '__main__':
     
     with open("config.json", "r") as f:
@@ -22,10 +13,52 @@ if __name__ == '__main__':
 
     sheet = gc.open_sheet(config["sheet_url"])
 
-    # Select a worksheet/tab
-    worksheet = sheet.worksheet("Test")
+    # id_sheet = sheet.worksheet("Participants")
+    # names = id_sheet.col_values(1)[1:7]
+    # srv.create_all_results_page(sheet,names,10,20)
 
-    S.prepare_results_page(worksheet,12,10,final=False)
+
+
+
+    data = {
+        'contests':["c1","c2","c3"],
+        'results': {
+            'participant_1': [[1000,1],[2000,2],[3000,3]],
+            'participant_2': [[1000,1],[],[3000,3]],
+            'participant_3': [[1000,1],[2000,2],[]],
+            'participant_4': [[1000,1],[2000,2],[3500,4]],
+        }
+    }
+
+    srv.create_all_results_page(sheet,4,3,data)
+
+    data = [[1000,1],[2000,6],[],[1500,2]]
+    srv.add_contest_to_all(sheet,"test",data)
+
+
+
+
+    # from src.google_sheets import writer
+
+    # ws = sheet.worksheet("t2")
+    # data = {
+    #     'contests':["c1","c2","c3"],
+    #     'results': {
+    #         'participant_1': [[1000,1],[2000,2],[3000,3]],
+    #         'participant_2': [[1000,1],[],[3000,3]],
+    #         'participant_3': [[1000,1],[2000,2],[]],
+    #         'participant_4': [[1000,1],[2000,2],[3500,4]],
+    #     }
+    # }
+    # writer.write_results(ws,data,False)
+
+
+
+
+    # Select a worksheet/tab
+    # worksheet = sheet.worksheet("t2")
+
+    # S.prepare_results_page(worksheet,12,10,final=False)
 
 
     # s = sheet.index_to_a1(4,2)
@@ -64,12 +97,12 @@ if __name__ == '__main__':
     # print(n_i_dict)
 
     # print("reciving contest standings from cf...")
-    # data = cf.adapter.get_contest_results(ids,2131)
+    # data = cf.adapter.get_contest_results(ids,2257)
     # print("data received")
 
     # print([p.username for p in data.participants])
     
     # print("recording in sheet...")
-    # srv.create_contest_standings_page(sheet,data,n_i_dict,"CF_1042",50)
+    # srv.create_contest_standings_page(sheet,data,n_i_dict,"CF_new",50)
     # print("Done !")    
 

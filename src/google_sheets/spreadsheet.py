@@ -54,6 +54,18 @@ class GoogleWorksheet:
     def row_values(self, row: int) -> list[Any]:
             return self._ws.row_values(row)
 
+    def row_count(self) -> int:
+        return self._ws.row_count
+
+    def col_count(self) -> int:
+        return self._ws.col_count
+
+    def add_rows(self, count: int) -> None:
+        self._ws.add_rows(count)
+
+    def add_cols(self, count: int) -> None:
+        self._ws.add_cols(count)
+
     def update(
         self,
         values: List[List[Any]],
@@ -76,6 +88,17 @@ class GoogleWorksheet:
             value_input_option=value_input_option,
         )
 
+    def clear(
+        self,
+        start_row: int,
+        end_row: int,
+        start_col: int,
+        end_col: int,
+    ) -> None:
+        range_name = gspread.utils.rowcol_to_a1(start_row, start_col) + ":" + \
+                    gspread.utils.rowcol_to_a1(end_row, end_col)
+
+        self._ws.batch_clear([range_name])
 
     def clear_worksheet_request(self) -> Dict[str, Any]:
         return {
@@ -84,6 +107,31 @@ class GoogleWorksheet:
                     "sheetId": self._ws.id
                 },
                 "fields": "*"
+            }
+        }
+
+    def clear_formatting_request(
+        self,
+        *,
+        start_row: int,
+        end_row: int,
+        start_col: int,
+        end_col: int,
+    ) -> Dict[str, Any]:
+
+        return {
+            "repeatCell": {
+                "range": {
+                    "sheetId": self._ws.id,
+                    "startRowIndex": start_row - 1,
+                    "endRowIndex": end_row,
+                    "startColumnIndex": start_col - 1,
+                    "endColumnIndex": end_col,
+                },
+                "cell": {
+                    "userEnteredFormat": {}
+                },
+                "fields": "userEnteredFormat",
             }
         }
 
@@ -339,6 +387,29 @@ class GoogleWorksheet:
                     "endColumnIndex": end_col,
                 },
                 "mergeType": merge_type,
+            }
+        }
+
+    def unmerge_cells_request(
+        self, *,
+        start_row: int,
+        end_row: int,
+        start_col: int,
+        end_col: int,
+    ) -> Dict[str, Any]:
+        """
+        Rows and columns are 1-based and inclusive.
+        """
+
+        return {
+            "unmergeCells": {
+                "range": {
+                    "sheetId": self._ws.id,
+                    "startRowIndex": start_row - 1,
+                    "endRowIndex": end_row,
+                    "startColumnIndex": start_col - 1,
+                    "endColumnIndex": end_col,
+                }
             }
         }
 
