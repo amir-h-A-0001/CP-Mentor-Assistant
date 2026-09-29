@@ -54,16 +54,23 @@ def write_standings_row(worksheet, participant, username, idx, current_row):
 def write_results_header(worksheet, columns, is_final):
     
     worksheet.update(
-        range_name = "A1",
+        range_name = "A2" if is_final else "A1",
         values=[["Contanstant\\Contest"]]
     )
 
     pairs = ["Performance","contest_idx"] if is_final else ["Performance","Solve"] 
 
     worksheet.update(
-        range_name = "B2",
+        range_name = "B3" if is_final else "B2",
         values=[pairs * columns]
     )
+
+    if is_final:
+        worksheet.update(
+            row=2,
+            col=1 + 2 * columns + 1,
+            values=[["Overall","Final"],["Sum * W","Personal Rating"]]
+        )
 
 def write_absence_column(worksheet, rows, columns):
 
@@ -122,6 +129,3 @@ def write_contest_col(worksheet, column, contest_name, results_ordered):
         col=column,
         values=results_ordered
     )
-
-
-

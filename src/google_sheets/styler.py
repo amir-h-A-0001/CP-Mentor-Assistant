@@ -819,5 +819,4 @@ def insert_contest_result_col(worksheet : spreadsheet.GoogleWorksheet, rows, ins
         )
     )
 
-
     worksheet.send_batch_request(requests)

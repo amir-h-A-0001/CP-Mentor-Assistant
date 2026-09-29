@@ -110,14 +110,28 @@ def add_contest_to_all(sheet, contest_name:str, data: list):
     writer.write_contest_col(worksheet,insert_col,contest_name,data)
 
 
-
-
-
+def create_final_results_page(sheet, title:str, rows: int, columns: int, data:dict):
+    '''
+    data must be formatted as:
+        {
+        'contests': list of contests
+        'results': {
+                username: list of result pairs 
+            }
+        }
+    '''
     
+    worksheet = sheet.add_worksheet(title, 3 + rows, 3 + columns * 2 )
+    
+    styler.prepare_results_page(worksheet, rows, columns, final=True)
 
+    writer.write_results_header(worksheet, columns, is_final=True)
 
+    worksheet.update(
+        range_name="B1",
+        values=[[title]]
+    )
 
+    writer.write_results(worksheet, data, has_header=True)
 
-
-def create_final_results_page(sheet, data):
-    ...
+    return worksheet

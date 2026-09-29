@@ -20,21 +20,29 @@ if __name__ == '__main__':
 
 
 
-    data = {
-        'contests':["c1","c2","c3"],
-        'results': {
-            'participant_1': [[1000,1],[2000,2],[3000,3]],
-            'participant_2': [[1000,1],[],[3000,3]],
-            'participant_3': [[1000,1],[2000,2],[]],
-            'participant_4': [[1000,1],[2000,2],[3500,4]],
-        }
-    }
+    # data = {
+    #     'contests':["c1","c2","c3"],
+    #     'results': {
+    #         'participant_1': [[1000,1],[2000,2],[3000,3]],
+    #         'participant_2': [[1000,3],[],[3000,3]],
+    #         'participant_3': [[1000,4],[2000,2],[]],
+    #         'participant_4': [[1000,5],[2000,2],[3500,4]],
+    #     }
+    # }
 
-    srv.create_all_results_page(sheet,4,3,data)
+    # srv.create_final_results_page(sheet,"semiFinal",4,3,data)
 
-    data = [[1000,1],[2000,6],[],[1500,2]]
-    srv.add_contest_to_all(sheet,"test",data)
+    import src.services.contest_service as csrv
 
+    csrv.create_final_table(sheet,
+                            title="testing",
+                            number_of_contests=4,
+                            best_first=True,
+                            weighted=True
+                            )
+
+    # data = [[1000,1],[2000,6],[],[1500,2]]
+    # srv.add_contest_to_all(sheet,"test",data)
 
 
 
