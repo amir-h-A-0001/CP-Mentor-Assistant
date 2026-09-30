@@ -1,5 +1,6 @@
 from . import api, calculator
 from src.models import *
+import re
 
 def extract_official(participants_set,contestID):
 
@@ -75,7 +76,18 @@ def get_performances(participants_set,contestID):
     return calculator.calc(all_contestants,participants_set)
 
 
-def get_contest_results(participants_set, contestID, include_virtual=False):
+def get_contest_id(url: str) -> int:
+    match = re.search(r'codeforces\.com/contest/(\d+)', url)
+
+    if not match:
+        raise ValueError("Invalid Codeforces contest URL")
+
+    return int(match.group(1))
+
+
+def get_contest_results(participants_set, url, include_virtual=False):
+
+    contestID = get_contest_id(url)
 
     result = extract_official(participants_set, contestID)
     performances = get_performances(participants_set, contestID)

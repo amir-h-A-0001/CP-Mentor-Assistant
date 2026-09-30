@@ -1,4 +1,5 @@
 from . import spreadsheet
+from src.models import *
 
 def write_participants_list_header(worksheet):
     worksheet.update(
@@ -13,7 +14,7 @@ def write_standings_header(worksheet, indices):
             values=[["Rank", "Contestant", "Solved", "Penalty", ""] + indices + ["", "Performance"]]
         )
 
-def write_standings_row(worksheet, participant, username, idx, current_row):
+def write_standings_row(worksheet, participant, name, idx, current_row):
     
         attempts = 0
         for p in participant.problems:
@@ -28,7 +29,7 @@ def write_standings_row(worksheet, participant, username, idx, current_row):
         minutes = (penalty_s % 60)
 
         first_row = (
-            [participant.rank, username, participant.solved, penalty_s, '']
+            [participant.rank, name, participant.solved, penalty_s, '']
             + [
                 '' if not p.tried else f"{p.reject_count}{'+' if p.is_solved else '-'}"
                 for p in participant.problems
@@ -128,4 +129,21 @@ def write_contest_col(worksheet, column, contest_name, results_ordered):
         row=3,
         col=column,
         values=results_ordered
+    )
+
+def write_contest_info(worksheet, row, short_name, url, contest, weight=None):
+
+    if worksheet.row_count() <= row:
+        worksheet.add_rows(1)
+    
+    worksheet.update(
+        row=row,
+        col=1,
+        values=[[
+            contest.contest_date.strftime("%Y-%m-%d") if contest.contest_date else '',
+            contest.name,
+            weight if weight else '',
+            short_name,
+            url
+        ]]
     )

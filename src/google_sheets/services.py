@@ -41,15 +41,15 @@ def create_contests_list_page(sheet, rows: int):
     return worksheet
 
 
-def create_contest_standings_page(sheet, contest: Contest, name_dict, short_name : str, rows: int):
+def create_contest_standings_page(sheet, contest: Contest, name_dict, short_name : str):
 
+    rows = 3 * len(contest.participants) + 2
+    
     worksheet = sheet.add_worksheet(short_name, rows, 7 + contest.number_of_problems)
 
     styler.prepare_contest_standings_ws(worksheet, short_name, contest.problem_indices)
     
     writer.write_standings_header(worksheet,contest.problem_indices)
-
-    writer.write_standings(worksheet, contest.participants, name_dict)
     
     current_row = 3
     for i, participant in enumerate(contest.participants):
@@ -57,15 +57,18 @@ def create_contest_standings_page(sheet, contest: Contest, name_dict, short_name
         judge_result = [1 if p.is_solved else -1 if p.tried else 0 for p in participant.problems]
         styler.prepare_contest_standing_row(worksheet, current_row, judge_result )
 
-        username = name_dict[participant.username]
-        writer.write_standings_row(worksheet, participant, username, i, current_row)
+        name = name_dict[participant.username]
+        writer.write_standings_row(worksheet, participant, name, i, current_row)
 
         current_row += 3
        
     return worksheet
 
 
-def create_all_results_page(sheet, rows: int, columns: int, data: dict):
+def create_all_results_page(sheet, data: dict):
+
+    rows = len(data['results'])
+    columns = len(data['contests'])
 
     worksheet = sheet.add_worksheet("All", 2 + rows, 2 + columns * 2 )
 
@@ -135,3 +138,18 @@ def create_final_results_page(sheet, title:str, rows: int, columns: int, data:di
     writer.write_results(worksheet, data, has_header=True)
 
     return worksheet
+
+def append_contest_info(sheet, short_name, url, contest, weight=None):
+
+    last_row = len(reader.get_contest_names(sheet)) + 1
+
+    worksheet = sheet.worksheet('Contests')
+
+    writer.write_contest_info(
+        worksheet,
+        row=last_row+1,
+        short_name=short_name,
+        url=url,
+        contest=contest,
+        weight=weight
+    )

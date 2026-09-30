@@ -2,7 +2,7 @@ import json
 import src.google_sheets.client as client
 import src.google_sheets.services as srv
 import src.google_sheets.styler as S
-
+import src.google_sheets.reader as rdr
 
 if __name__ == '__main__':
     
@@ -32,14 +32,22 @@ if __name__ == '__main__':
 
     # srv.create_final_results_page(sheet,"semiFinal",4,3,data)
 
+    # names = rdr.get_participant_names(sheet)
+
+    # data = {
+    #     'contests':[],
+    #     'results':{
+    #         name:[] 
+    #         for name in names
+    #     }
+    # }
+
+    # srv.create_all_results_page(sheet, data)
+
     import src.services.contest_service as csrv
 
-    csrv.create_final_table(sheet,
-                            title="testing",
-                            number_of_contests=4,
-                            best_first=True,
-                            weighted=True
-                            )
+    csrv.add_contest(sheet,"cf 1042","https://codeforces.com/contest/2131",False)
+
 
     # data = [[1000,1],[2000,6],[],[1500,2]]
     # srv.add_contest_to_all(sheet,"test",data)

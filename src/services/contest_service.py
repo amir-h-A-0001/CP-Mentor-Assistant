@@ -1,24 +1,48 @@
 from src.google_sheets import services, reader
+import src.platforms as platforms
 import src.models
 
-def add_contest(sheet, platform_idx, contest):
-    
-    usernames = reader.get_participant_ids(sheet, platform_idx)
-    
+def add_contest(sheet, short_title, url, include_virtuals, platform_name=None, weight=None):
+
+    # Find the platform
+    if platform_name is not None:
+        platform = platforms.get_platform(platform_name)
+    else:
+        platform = platforms.get_platform_from_url(url)
+
+    # Extract name and usernames and connect them
+    names = reader.get_participant_names(sheet)
+    usernames = reader.get_participant_ids(sheet, platform.USERNAME_COLUMN)
+
+    names_dict = {
+        username : name 
+        for username,name in zip(usernames, names)
+    }
+
+    # Prepare participants format and exract contest data
+    participants_set = set(usernames)
+    contest = platform.extract(participants_set, url, include_virtuals)
+
+    # Create standings page
+    services.create_contest_standings_page(sheet, contest, names_dict, short_title)
+
+    # Prepare format for all results page and add contest to the page
     participant_map = {
         p.username: p
         for p in contest.participants
     }
 
     participants_ordered = [
-        [participant_map[name]] if name in participant_map else []
+        participant_map[name] if name in participant_map else None
         for name in usernames
     ]
 
-    data = [[c.performance, c.solved] for c in participants_ordered]
+    data = [[c.performance if c.performance > 0 else '-', c.solved] if c else [] for c in participants_ordered]
 
     services.add_contest_to_all(sheet, contest.name, data)
 
+    # Add contest to the contests page
+    services.append_contest_info(sheet, short_title, url, contest, weight)
 
 
 def create_final_table(sheet, *, title, number_of_contests, most_absences, best_first, weighted):

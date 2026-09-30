@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional
 from .participant import ParticipantResult
+from datetime import date
 
 @dataclass
 class Contest:
@@ -8,3 +9,4 @@ class Contest:
     number_of_problems: int
     problem_indices: list[str] = field(default_factory=list)
     participants: list[ParticipantResult] = field(default_factory=list)
+    contest_date: date | None=None
