@@ -42,13 +42,20 @@ def get_all_results(sheet):
 
     contests_row = ws.row_values(1)[1:-1]
 
-    return {
+    data = {
         'contests': [contests_row[i * 2] for i in range(len(contests_row) // 2)],
         'results':{
             row[0]:
-            [[int(row[1+j*2]) if row[1+j*2] else row[1+j*2] ,
+            [[int(row[1+j*2]) if row[1+j*2] and row[1+j*2] != '-' else row[1+j*2] ,
               int(row[1+j*2+1]) if row[1+j*2+1] else row[1+j*2+1]]
               for j in range(cols)]
             for row in [ws.row_values(i) for i in range(3,rows + 3)]
         }
     }
+
+    absences = ws.col_values(len(data['contests'] * 2 + 2))[2:]
+
+    for i,row in enumerate(data['results']):
+        row.append(absences[i])
+
+    return data
