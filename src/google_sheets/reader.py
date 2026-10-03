@@ -17,9 +17,13 @@ def get_platforms(sheet):
     ws = sheet.worksheet('Participants')
     return ws.row_values(1)[1:]
 
-def get_number_of_contests(sheet):
+def get_number_of_recorded_contests(sheet):
     ws = sheet.worksheet('All')
     return (ws.col_count() - 2) // 2
+
+def get_number_of_contests(sheet):
+    ws = sheet.worksheet('All')
+    return len(ws.col_values(3)) - 1
 
 def get_contest_names(sheet):
     ws = sheet.worksheet('Contests')
@@ -28,6 +32,40 @@ def get_contest_names(sheet):
 def get_contest_short_names(sheet):
     ws = sheet.worksheet('Contests')
     return ws.col_values(4)[1:]
+
+def get_all_contests(sheet):
+    ws = sheet.worksheet('Contests')
+
+    i = 2
+    limit = ws.row_count()
+
+    data = []
+
+    if i <= limit:
+        c_data = ws.row_values(i)
+    else:
+        return data
+
+    while c_data:
+        if len(c_data) != 5 or (not c_data[1]):
+            data.append({})
+        else:
+            data.append(
+                {
+                    'name':c_data[1],
+                    'weight':float(c_data[2]) if c_data[2] else 1,
+                    'short_name': c_data[3] if c_data[3] else "c_" + str(i),
+                    'url': c_data[4]
+                }
+            )
+        i += 1
+        if i <= limit:
+            c_data = c_data = ws.row_values(i)
+        else:
+            break
+
+    return data
+
 
 def get_contest_weights(sheet):
     ws = sheet.worksheet('Contests')

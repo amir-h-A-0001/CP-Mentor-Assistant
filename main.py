@@ -1,8 +1,8 @@
 import json
 import src.google_sheets.client as client
 import src.google_sheets.services as srv
-import src.google_sheets.styler as S
 import src.google_sheets.reader as rdr
+import src.services.contest_service as csrv
 
 if __name__ == '__main__':
     
@@ -13,12 +13,21 @@ if __name__ == '__main__':
 
     sheet = gc.open_sheet(config["sheet_url"])
 
+    # ws = sheet.worksheet('Contests')
+    # print(ws.row_values(2))
+    # print(ws.row_values(3))
+    # print(ws.row_values(4))
+
+    
+    # print(rdr.get_all_contests(sheet))
+
+    csrv.add_batch_contests(sheet,False)
+
+
+
     # id_sheet = sheet.worksheet("Participants")
     # names = id_sheet.col_values(1)[1:7]
     # srv.create_all_results_page(sheet,names,10,20)
-
-
-
 
     # data = {
     #     'contests':["c1","c2","c3"],
@@ -44,9 +53,9 @@ if __name__ == '__main__':
 
     # srv.create_all_results_page(sheet, data)
 
-    import src.services.contest_service as csrv
+    # import src.services.contest_service as csrv
 
-    csrv.add_contest(sheet,"cf 1042","https://codeforces.com/contest/2131",False)
+    # csrv.add_contest(sheet,"cf 1042","https://codeforces.com/contest/2131",False)
 
 
     # data = [[1000,1],[2000,6],[],[1500,2]]

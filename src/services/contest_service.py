@@ -44,6 +44,26 @@ def add_contest(sheet, short_title, url, include_virtuals, platform_name=None, w
     # Add contest to the contests page
     services.append_contest_info(sheet, short_title, url, contest, weight)
 
+def add_batch_contests(sheet, include_virtuals):
+
+    contests = reader.get_all_contests(sheet)
+    recorded = reader.get_number_of_recorded_contests(sheet)
+
+    for i,c in enumerate(contests):
+        if i < recorded:
+            continue
+
+        if not c:
+            print(f'Insufficient data for row {i + 2} (name and url are mandatory)')
+            continue
+
+        add_contest(
+            sheet=sheet,
+            short_title=c['short_name'],
+            url=c['url'],
+            include_virtuals=include_virtuals
+        )
+
 
 def create_final_table(sheet, *, title, number_of_contests, most_absences, best_first, weighted):
 

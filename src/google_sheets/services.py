@@ -88,7 +88,7 @@ def add_contest_to_all(sheet, contest_name:str, data: list):
     worksheet = sheet.worksheet('All')
     
     insert_col = worksheet.col_count()
-    cols = reader.get_number_of_contests(sheet)
+    cols = reader.get_number_of_recorded_contests(sheet)
     rows = len(reader.get_participant_names(sheet))
     
     worksheet.add_cols(2)
