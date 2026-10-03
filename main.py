@@ -21,7 +21,7 @@ if __name__ == '__main__':
     
     # print(rdr.get_all_contests(sheet))
 
-    csrv.add_batch_contests(sheet,False)
+    csrv.add_batch_contests(sheet,False,False)
 
 
 
