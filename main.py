@@ -3,26 +3,13 @@ import src.google_sheets.client as client
 import src.google_sheets.services as srv
 import src.google_sheets.reader as rdr
 import src.services.contest_service as csrv
+from src.services import config_services
+
 
 if __name__ == '__main__':
     
-    with open("config.json", "r") as f:
-        config = json.load(f)
-
-    gc = client.GoogleClient("key.json")
-
-    sheet = gc.open_sheet(config["sheet_url"])
-
-    # ws = sheet.worksheet('Contests')
-    # print(ws.row_values(2))
-    # print(ws.row_values(3))
-    # print(ws.row_values(4))
-
-    
-    # print(rdr.get_all_contests(sheet))
-
-    csrv.add_batch_contests(sheet,False,False)
-
+    gc = client.GoogleClient(config_services.get_creds_path())
+    main_sheet = gc.open_sheet(config_services.get_sheet_url("main"))
 
 
     # id_sheet = sheet.worksheet("Participants")

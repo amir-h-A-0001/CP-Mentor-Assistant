@@ -66,7 +66,6 @@ def get_all_contests(sheet):
 
     return data
 
-
 def get_contest_weights(sheet):
     ws = sheet.worksheet('Contests')
     return [float(x) for x in  ws.col_values(3)[1:]]
