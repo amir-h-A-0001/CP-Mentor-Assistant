@@ -413,5 +413,46 @@ class GoogleWorksheet:
             }
         }
 
+    def copy_formula_request(
+        self,
+        *,
+        source_start_row: int,
+        source_end_row: int,
+        source_start_col: int,
+        source_end_col: int,
+        dest_start_row: int,
+        dest_end_row: int,
+        dest_start_col: int,
+        dest_end_col: int,
+    ) -> Dict[str, Any]:
+        """
+        Copy formulas from the source range to the destination range.
+        Rows and columns are 1-based and inclusive.
+
+        Relative formula references adjust automatically.
+        """
+        return {
+            "copyPaste": {
+                "source": {
+                    "sheetId": self._ws.id,
+                    "startRowIndex": source_start_row - 1,
+                    "endRowIndex": source_end_row,
+                    "startColumnIndex": source_start_col - 1,
+                    "endColumnIndex": source_end_col,
+                },
+                "destination": {
+                    "sheetId": self._ws.id,
+                    "startRowIndex": dest_start_row - 1,
+                    "endRowIndex": dest_end_row,
+                    "startColumnIndex": dest_start_col - 1,
+                    "endColumnIndex": dest_end_col,
+                },
+                "pasteType": "PASTE_FORMULA",
+                "pasteOrientation": "NORMAL",
+            }
+        }
+    
     def send_batch_request(self, requests: List[Dict[str, Any]]) -> Dict[str, Any]:
         return self.parent.send_batch_request(requests)
+
+    

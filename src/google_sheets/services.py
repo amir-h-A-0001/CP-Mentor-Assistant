@@ -82,6 +82,15 @@ def create_all_results_page(sheet, data: dict):
 
     return worksheet
 
+def does_url_exist(sheet, url:str):
+
+    contests = reader.get_all_contests(sheet)
+
+    for contest in contests:
+        if contest and contest['url'] == url:
+            return True
+
+    return False
 
 def add_contest_to_all(sheet, contest_name:str, data: list):
 
@@ -111,6 +120,36 @@ def add_contest_to_all(sheet, contest_name:str, data: list):
     writer.write_absence_column(worksheet, rows, cols + 1)
 
     writer.write_contest_col(worksheet,insert_col,contest_name,data)
+
+def append_rows_to_all(sheet : spreadsheet.GoogleSpreadSheet, names):
+
+    worksheet = sheet.worksheet('All')    
+
+    last_row_index = worksheet.row_count()
+    absence_col_index = worksheet.col_count()
+    new_rows_count = len(names)
+
+    worksheet.add_rows(new_rows_count)
+
+    worksheet.copy_formula_request(
+        source_start_row= last_row_index,
+        source_end_row=last_row_index,
+        source_start_col=absence_col_index,
+        source_end_col=absence_col_index,
+        
+        dest_start_row=last_row_index+1,
+        dest_end_row=last_row_index + new_rows_count,
+        dest_start_col=absence_col_index,
+        dest_end_col=absence_col_index 
+    )
+
+    names = [[name] for name in names]
+
+    worksheet.update(
+        row=last_row_index + 1,
+        col= 1,
+        values= names
+    )
 
 
 def create_final_results_page(sheet, title:str, rows: int, columns: int, data:dict):

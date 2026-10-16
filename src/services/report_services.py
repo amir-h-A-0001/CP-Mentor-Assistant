@@ -7,7 +7,7 @@ def create_final_table(sheet, *, title, number_of_contests, most_absences, best_
     number_of_contests = min(number_of_contests,len(data['contests']))
 
     # Remove participants with absences exceeding the limit + remove absence count
-    data['results'] = {k:v[:-1] for k,v in data['results'] if v[-1] <= most_absences}
+    data['results'] = {k:v[:-1] for k,v in data['results'].items() if v[-1] <= most_absences}
 
     # Replace solve count with contest index
     for row in data['results'].values():

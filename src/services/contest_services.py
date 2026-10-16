@@ -4,6 +4,9 @@ import src.models
 
 def add_contest(sheet, short_title, url, include_virtuals, create_standings, exists=False, platform_name=None, weight=None):
 
+    if not exists and services.does_url_exist(sheet, url):
+        return "Already exists"
+
     # Find the platform
     if platform_name is not None:
         platform = platforms.get_platform(platform_name)
@@ -46,7 +49,11 @@ def add_contest(sheet, short_title, url, include_virtuals, create_standings, exi
     if not exists:
         services.append_contest_info(sheet, short_title, url, contest, weight)
 
+    return "Done"
+
 def add_batch_contests(sheet, include_virtuals, create_standings):
+
+    result_log = []
 
     contests = reader.get_all_contests(sheet)
     recorded = reader.get_number_of_recorded_contests(sheet)
@@ -56,7 +63,7 @@ def add_batch_contests(sheet, include_virtuals, create_standings):
             continue
 
         if not c:
-            print(f'Insufficient data for row {i + 2} (name and url are mandatory)')
+            result_log.append((False, f'Insufficient data for row {i + 2} (name and url are mandatory)'))
             continue
 
         add_contest(
@@ -67,4 +74,9 @@ def add_batch_contests(sheet, include_virtuals, create_standings):
             create_standings=create_standings,
             exists=True
         )
+     
+        result_log.append((True,f'{c['name']} was added from row {i + 1})'))
+
+    return result_log
+    
 

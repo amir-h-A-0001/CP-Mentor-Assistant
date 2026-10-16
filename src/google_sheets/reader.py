@@ -68,7 +68,7 @@ def get_all_contests(sheet):
 
 def get_contest_weights(sheet):
     ws = sheet.worksheet('Contests')
-    return [float(x) for x in  ws.col_values(3)[1:]]
+    return [float(x) if x else 0 for x in  ws.col_values(3)[1:]]
 
 def get_all_results(sheet):
 
@@ -90,9 +90,13 @@ def get_all_results(sheet):
         }
     }
 
-    absences = ws.col_values(len(data['contests'] * 2 + 2))[2:]
+    absences = [int(absence) for absence in ws.col_values(len(data['contests'] * 2) + 2)[2:]]
 
-    for i,row in enumerate(data['results']):
+    for i,row in enumerate(data['results'].values()):
         row.append(absences[i])
 
     return data
+
+def get_recorded_participants(sheet):
+    ws = sheet.worksheet('All')
+    return ws.col_values(1)[2:]
