@@ -7,7 +7,6 @@ def write_participants_list_header(worksheet):
         values=[["FullName", "CF ID", "AtCoder ID"]]
     )
 
-
 def write_standings_header(worksheet, indices):
     worksheet.update(
             range_name="A1",
@@ -51,6 +50,15 @@ def write_standings_row(worksheet, participant, name, idx, current_row):
             values=[first_row, second_row],
         )
 
+def write_column(worksheet, column, start_row, values):
+    
+    vertical_values = [[val] for val in values]
+    
+    worksheet.update(
+        row=start_row,
+        col= column,
+        values= vertical_values
+    )
 
 def write_results_header(worksheet, columns, is_final):
     

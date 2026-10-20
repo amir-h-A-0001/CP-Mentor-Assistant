@@ -451,6 +451,56 @@ class GoogleWorksheet:
                 "pasteOrientation": "NORMAL",
             }
         }
+
+    def hide_rows_request(
+        self,
+        *,
+        start_row: int,
+        end_row: int,
+    ) -> Dict[str, Any]:
+        """
+        Hide rows from start_row to end_row (1-based, inclusive).
+        """
+        return {
+            "updateDimensionProperties": {
+                "range": {
+                    "sheetId": self._ws.id,
+                    "dimension": "ROWS",
+                    "startIndex": start_row - 1,
+                    "endIndex": end_row,
+                },
+                "properties": {
+                    "hiddenByUser": True,
+                },
+                "fields": "hiddenByUser",
+            }
+        }
+
+    def delete_rows_request(
+        self,
+        *,
+        start_row: int,
+        end_row: int,
+    ) -> Dict[str, Any]:
+        """
+        Delete rows from start_row to end_row (1-based, inclusive).
+        """
+        return {
+            "deleteDimension": {
+                "range": {
+                    "sheetId": self._ws.id,
+                    "dimension": "ROWS",
+                    "startIndex": start_row - 1,
+                    "endIndex": end_row,
+                }
+            }
+        }
+
+    def remove_rows(self, start_index: int, end_index: Optional[int] = None) -> None:
+        if end_index is None:
+            end_index = start_index
+
+        self._ws.delete_rows(start_index, end_index)
     
     def send_batch_request(self, requests: List[Dict[str, Any]]) -> Dict[str, Any]:
         return self.parent.send_batch_request(requests)

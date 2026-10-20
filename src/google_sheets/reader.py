@@ -22,7 +22,7 @@ def get_number_of_recorded_contests(sheet):
     return (ws.col_count() - 2) // 2
 
 def get_number_of_contests(sheet):
-    ws = sheet.worksheet('All')
+    ws = sheet.worksheet('Contests')
     return len(ws.col_values(3)) - 1
 
 def get_contest_names(sheet):
@@ -74,7 +74,7 @@ def get_all_results(sheet):
 
     ws = sheet.worksheet('All')
 
-    rows = ws.row_count() - 2
+    rows = ws.row_count() - 2 - 1
     cols = (ws.col_count() - 2) // 2
 
     contests_row = ws.row_values(1)[1:-1]
@@ -90,7 +90,7 @@ def get_all_results(sheet):
         }
     }
 
-    absences = [int(absence) for absence in ws.col_values(len(data['contests'] * 2) + 2)[2:]]
+    absences = [int(absence) for absence in ws.col_values(len(data['contests'] * 2) + 2)[2:-1]]
 
     for i,row in enumerate(data['results'].values()):
         row.append(absences[i])
@@ -99,4 +99,10 @@ def get_all_results(sheet):
 
 def get_recorded_participants(sheet):
     ws = sheet.worksheet('All')
-    return ws.col_values(1)[2:]
+    return ws.col_values(1)[2:-1]
+
+def get_recorded_contest_codes(sheet):
+    ws = sheet.worksheet('All')
+    last_row = ws.row_count()
+    cols = ws.col_count()
+    return ws.row_values(last_row)[1:cols-1]

@@ -67,10 +67,11 @@ def create_contest_standings_page(sheet, contest: Contest, name_dict, short_name
 
 def create_all_results_page(sheet, data: dict):
 
-    rows = len(data['results'])
+    rows = len(data['results']) 
     columns = len(data['contests'])
 
-    worksheet = sheet.add_worksheet("All", 2 + rows, 2 + columns * 2 )
+    if "All" not in sheet.worksheets():
+        worksheet = sheet.add_worksheet("All", 3 + rows, 2 + columns * 2)
 
     styler.prepare_results_page(worksheet, rows, columns, final=False)
 
@@ -82,15 +83,11 @@ def create_all_results_page(sheet, data: dict):
 
     return worksheet
 
-def does_url_exist(sheet, url:str):
+def is_contest_recorded(sheet, code:str):
 
-    contests = reader.get_all_contests(sheet)
+    codes = reader.get_recorded_contest_codes(sheet)
 
-    for contest in contests:
-        if contest and contest['url'] == url:
-            return True
-
-    return False
+    return code in codes
 
 def add_contest_to_all(sheet, contest_name:str, data: list):
 
@@ -98,11 +95,11 @@ def add_contest_to_all(sheet, contest_name:str, data: list):
     
     insert_col = worksheet.col_count()
     cols = reader.get_number_of_recorded_contests(sheet)
-    rows = len(reader.get_participant_names(sheet))
+    rows = len(reader.get_recorded_participants(sheet))
     
     worksheet.add_cols(2)
 
-    styler.insert_contest_result_col(worksheet, worksheet.row_count(),insert_col)
+    styler.insert_contest_result_col(worksheet, worksheet.row_count()-1,insert_col)
 
     worksheet.clear(
         start_row=3,
@@ -125,33 +122,52 @@ def append_rows_to_all(sheet : spreadsheet.GoogleSpreadSheet, names):
 
     worksheet = sheet.worksheet('All')    
 
-    last_row_index = worksheet.row_count()
-    absence_col_index = worksheet.col_count()
-    new_rows_count = len(names)
+    codes_row =  worksheet.row_count()
+    absence_col = worksheet.col_count()
+    last_name_row = codes_row - 1
+    new_names_count = len(names)
 
-    worksheet.add_rows(new_rows_count)
+    contest_codes = reader.get_recorded_contest_codes(sheet)
 
-    worksheet.copy_formula_request(
-        source_start_row= last_row_index,
-        source_end_row=last_row_index,
-        source_start_col=absence_col_index,
-        source_end_col=absence_col_index,
-        
-        dest_start_row=last_row_index+1,
-        dest_end_row=last_row_index + new_rows_count,
-        dest_start_col=absence_col_index,
-        dest_end_col=absence_col_index 
+    worksheet.remove_rows(codes_row)
+    worksheet.add_rows(new_names_count + 1)
+
+    worksheet.send_batch_request(
+        [
+            worksheet.copy_formula_request(
+                source_start_row= last_name_row,
+                source_end_row=last_name_row,
+                source_start_col=absence_col,
+                source_end_col=absence_col,
+                
+                dest_start_row=last_name_row+1,
+                dest_end_row=last_name_row + new_names_count,
+                dest_start_col=absence_col,
+                dest_end_col=absence_col 
+            )
+        ]
     )
 
-    names = [[name] for name in names]
+    writer.write_column(
+        worksheet=worksheet,
+        column=1,
+        start_row=last_name_row + 1,
+        values=names
+    )
+
+    codes_row = last_name_row + new_names_count + 1
+
+    styler.prepare_contest_codes_row(
+        worksheet=worksheet,
+        row=codes_row,
+        columns=absence_col)
 
     worksheet.update(
-        row=last_row_index + 1,
-        col= 1,
-        values= names
+        row=codes_row,
+        col=2,
+        values=[contest_codes]
     )
-
-
+    
 def create_final_results_page(sheet, title:str, rows: int, columns: int, data:dict):
     '''
     data must be formatted as:
@@ -177,6 +193,7 @@ def create_final_results_page(sheet, title:str, rows: int, columns: int, data:di
     writer.write_results(worksheet, data, has_header=True)
 
     return worksheet
+
 
 def append_contest_info(sheet, short_name, url, contest, weight=None):
 

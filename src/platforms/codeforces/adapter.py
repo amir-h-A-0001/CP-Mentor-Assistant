@@ -84,6 +84,9 @@ def get_contest_id(url: str) -> int:
 
     return int(match.group(1))
 
+def get_code(url):
+    return 'CF' + str(get_contest_id(url))
+
 
 def get_contest_results(participants_set, url, include_virtual=False):
 

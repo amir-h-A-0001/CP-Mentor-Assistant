@@ -9,6 +9,7 @@ config.json
 
 # temporary test file
 src/example.json
+test.py
 
 # C extensions
 *.so

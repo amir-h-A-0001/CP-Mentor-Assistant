@@ -16,15 +16,17 @@ def create_final_table(sheet, *, title, number_of_contests, most_absences, best_
 
     # Sort and choose the best contests based on the performance
     if(best_first):
+        data['contests'] = list([f'contest_{i+1}' for i in range(len(data['contests']))])
         for row in data['results'].values():
             row.sort(key=lambda x: x[0] if (x[0] != '' and x[0] != '-') else 0, reverse=True)
     
     # Slice the number of wanted contests
-    for row in data['results'].values():
-        row = row[:number_of_contests]
-
+    data['contests'] = data['contests'][:number_of_contests]
+    for key in data['results']:
+        data['results'][key] = data['results'][key][:number_of_contests]
+    
     # Read weights from contests page and Calculate weighted sum and weighted average or mean if weightd was False
-    weights = reader.get_contest_weights(sheet) if weighted else ([1]* len(data['contests']))
+    weights = reader.get_contest_weights(sheet) if weighted else ([1]* reader.get_number_of_recorded_contests(sheet))
 
     for row in data['results'].values():
         weighted_sum = sum([pair[0] * weights[pair[1]-1] if (pair[0] != '' and pair[0] != '-') else 0 for pair in row])

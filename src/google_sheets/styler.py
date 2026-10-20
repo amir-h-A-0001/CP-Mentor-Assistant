@@ -482,7 +482,7 @@ def _results_header(worksheet,length):
 
     return requests
 
-def _result_column(worksheet, rows, header_row, column_idx):
+def _result_column(worksheet :spreadsheet.GoogleWorksheet, rows, header_row, column_idx):
 
     requests = []
 
@@ -689,6 +689,52 @@ def _final_scores_columns(worksheet, rows, header_row, column_idx):
     return requests
 
 
+
+def prepare_contest_codes_row(worksheet: spreadsheet.GoogleWorksheet, row, columns):
+
+    
+    cells = 2 * columns + 2
+    requests = []
+
+    requests.append(
+        worksheet.update_row_height_request(
+            start_row=row,
+            end_row=row,
+            height=20
+        )
+    )
+
+    requests.append(
+        worksheet.update_range_color_request(
+            start_row=row,
+            end_row=row,
+            start_col=1,
+            end_col= cells,
+            color=(241,241,241)
+        )
+    )
+
+    requests.append(
+        worksheet.hide_rows_request(
+            start_row=row,
+            end_row=row
+        )
+    )
+
+
+    for i in range(2, cells-1 ,2):
+        requests.append(
+            worksheet.merge_cells_request(
+                start_row=row,
+                end_row=row,
+                start_col= i,
+                end_col=i+1
+            )
+        )
+
+    worksheet.send_batch_request(requests)
+
+
 def prepare_results_page(worksheet, rows, columns, final):
 
     header_row = 1
@@ -710,7 +756,7 @@ def prepare_results_page(worksheet, rows, columns, final):
     requests.append(
         worksheet.update_font_request(
             start_row=header_row,
-            end_row= header_row + 2 + rows - 1,
+            end_row= header_row + 2 + rows,
             start_col=1,
             end_col= columns * 2 + (3 if final else 2),
             font_family="Oswald"
@@ -756,8 +802,15 @@ def prepare_results_page(worksheet, rows, columns, final):
 
     worksheet.send_batch_request(requests)
 
+    if not final:
+        prepare_contest_codes_row(
+            worksheet=worksheet,
+            row=rows + 3,
+            columns= columns
+        )
 
-def insert_contest_result_col(worksheet : spreadsheet.GoogleWorksheet, rows, insert_col):
+
+def insert_contest_result_col(worksheet , rows, insert_col):
 
     requests = []
 
@@ -819,4 +872,24 @@ def insert_contest_result_col(worksheet : spreadsheet.GoogleWorksheet, rows, ins
         )
     )
 
+    requests.append(
+        worksheet.update_range_color_request(
+            start_row=rows + 1,
+            end_row=rows + 1,
+            start_col=insert_col,
+            end_col= insert_col + 1,
+            color=(241,241,241)
+        )
+    )
+
+    requests.append(
+        worksheet.merge_cells_request(
+            start_row=rows + 1,
+            end_row=rows + 1,
+            start_col=insert_col,
+            end_col=insert_col + 1
+        )
+    )
+
     worksheet.send_batch_request(requests)
+
